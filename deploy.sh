@@ -1,33 +1,24 @@
 #!/bin/bash
-set -euo pipefail
+set -e
 
-echo "=== StreamFlow Deploy ==="
+echo "=== Updating packages ==="
+apt-get update -qq && apt-get install -y -qq git ffmpeg nginx certbot python3-certbot-nginx nodejs npm
 
-# Config - edit these
-DOMAIN="${1:-localhost}"
-ADMIN_EMAIL="${2:-admin@streamflow.app}"
+echo "=== Cloning StreamFlow ==="
+rm -rf /opt/streamflow
+git clone https://github.com/MoneyPackk/streamflow.git /opt/streamflow
 
-echo "Domain: $DOMAIN"
-echo "Email: $ADMIN_EMAIL"
+echo "=== Installing dependencies ==="
+cd /opt/streamflow && npm install --production
 
-# Install deps
-apt-get update -qq
-apt-get install -y -qq curl ffmpeg nginx certbot python3-certbot-nginx nodejs npm git
+echo "=== Generating JWT secret ==="
+echo '{"JWT_SECRET":"'$(openssl rand -hex 32)'"}' > /opt/streamflow/.env
 
-# Clone the project
-cd /opt
-git clone https://github.com/moneypack/streamflow.git
-cd streamflow
-
-# Install Node deps & build
-npm install --production
-
-# Create systemd service
-cat > /etc/systemd/system/streamflow.service <<EOF
+echo "=== Creating systemd service ==="
+cat > /etc/systemd/system/streamflow.service <<'EOF'
 [Unit]
-Description=StreamFlow Streaming Platform
+Description=StreamFlow
 After=network.target
-
 [Service]
 Type=simple
 User=root
@@ -35,56 +26,28 @@ WorkingDirectory=/opt/streamflow
 ExecStart=/usr/bin/node src/server/index.js
 Restart=always
 RestartSec=5
-Environment=PORT=3000
-Environment=NODE_ENV=production
-Environment=JWT_SECRET=$(openssl rand -hex 32)
-
+Environment=PORT=3000 NODE_ENV=production
 [Install]
 WantedBy=multi-user.target
 EOF
 
-systemctl daemon-reload
-systemctl enable streamflow
-systemctl start streamflow
+echo "=== Starting StreamFlow service ==="
+systemctl daemon-reload && systemctl enable --now streamflow
 
-# Nginx reverse proxy
-cat > /etc/nginx/sites-available/streamflow <<EOF
-server {
-    listen 80;
-    server_name $DOMAIN;
-
-    client_max_body_size 10G;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-    }
-
-    location /uploads/ {
-        alias /opt/streamflow/public/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-}
-EOF
+echo "=== Configuring nginx ==="
+cat > /etc/nginx/sites-available/streamflow <<'NGINX'
+server { listen 80; server_name _; client_max_body_size 10G; location / { proxy_pass http://127.0.0.1:3000; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection 'upgrade'; proxy_set_header Host $host; proxy_cache_bypass $http_upgrade; } location /uploads/ { alias /opt/streamflow/public/uploads/; expires 30d; add_header Cache-Control "public, immutable"; } }
+NGINX
 
 ln -sf /etc/nginx/sites-available/streamflow /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
-# SSL via Let's Encrypt
-if [ "$DOMAIN" != "localhost" ]; then
-    certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL" || echo "SSL failed (domains may not resolve yet)"
-fi
+echo "=== Checking status ==="
+sleep 2
+curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:3000
 
 echo ""
-echo "=== DEPLOY COMPLETE ==="
-echo "Site: http://$DOMAIN"
-echo "API:  http://$DOMAIN/api"
-echo ""
-echo "Register at /register then upload videos at /upload"
-echo "Update your is-a.dev A record to: $(curl -s ifconfig.me)"
+echo "=== Done! StreamFlow is running ==="
+echo "Server: http://5.161.178.63"
+echo "Domain: https://moneypack.is-a.dev"
