@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamFlow</title>
+<link rel="stylesheet" href="/css/style.css">
+<link href="https://cdn.jsdelivr.net/npm/video.js@8/dist/video-js.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav id="nav">
+    <div class="nav-inner">
+      <a href="#" class="logo" onclick="showPage('browse')">StreamFlow</a>
+      <div class="nav-links">
+        <a href="#" onclick="showPage('browse')">Browse</a>
+        <a href="#" id="nav-favorites" onclick="showPage('favorites')" style="display:none">Favorites</a>
+        <a href="#" id="nav-admin" onclick="showPage('admin')" style="display:none">Upload</a>
+        <a href="#" id="nav-login" onclick="showPage('login')">Sign In</a>
+        <a href="#" id="nav-logout" onclick="logout()" style="display:none">Sign Out</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div id="page-browse" class="page active">
+      <div class="hero" id="hero">
+        <div class="hero-content">
+          <h1 id="hero-title">Welcome to StreamFlow</h1>
+          <p id="hero-desc">New movies and shows. No ads. Just content.</p>
+        </div>
+      </div>
+      <div class="filters">
+        <input type="text" id="search" placeholder="Search titles..." oninput="debounceSearch()">
+        <select id="genre-filter" onchange="loadContent()"><option value="">All Genres</option></select>
+        <select id="type-filter" onchange="loadContent()"><option value="">All Types</option><option value="movie">Movies</option><option value="show">Shows</option></select>
+      </div>
+      <div class="content-grid" id="content-grid"></div>
+    </div>
+
+    <div id="page-player" class="page">
+      <button class="back-btn" onclick="showPage('browse')">← Back</button>
+      <div class="player-container">
+        <video id="video-player" class="video-js vjs-big-play-centered" controls preload="auto" data-setup='{}'></video>
+      </div>
+      <div class="player-info" id="player-info"></div>
+    </div>
+
+    <div id="page-login" class="page">
+      <div class="auth-form">
+        <h2 id="auth-title">Sign In</h2>
+        <input type="email" id="auth-email" placeholder="Email">
+        <input type="password" id="auth-password" placeholder="Password">
+        <input type="text" id="auth-username" placeholder="Username" style="display:none">
+        <p class="auth-error" id="auth-error"></p>
+        <button onclick="handleAuth()" id="auth-btn">Sign In</button>
+        <p class="auth-toggle" id="auth-toggle" onclick="toggleAuth()">Don't have an account? Register</p>
+      </div>
+    </div>
+
+    <div id="page-favorites" class="page">
+      <h2>Your Favorites</h2>
+      <div class="content-grid" id="favorites-grid"></div>
+    </div>
+
+    <div id="page-admin" class="page">
+      <h2>Upload Content</h2>
+      <div class="admin-form">
+        <input type="text" id="ad-title" placeholder="Title">
+        <textarea id="ad-desc" placeholder="Description"></textarea>
+        <input type="text" id="ad-genre" placeholder="Genre">
+        <input type="number" id="ad-year" placeholder="Release Year">
+        <select id="ad-type"><option value="movie">Movie</option><option value="show">Show</option></select>
+        <input type="text" id="ad-poster" placeholder="Poster URL (optional)">
+        <input type="file" id="ad-video" accept="video/*">
+        <input type="number" id="ad-episode" placeholder="Episode Number (for shows)" style="display:none">
+        <input type="number" id="ad-season" placeholder="Season Number (for shows)" style="display:none">
+        <p class="auth-error" id="ad-error"></p>
+        <button onclick="uploadContent()">Upload</button>
+      </div>
+    </div>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/video.js@8/dist/video.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

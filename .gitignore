@@ -1,0 +1,6 @@
+node_modules/
+data/
+public/uploads/hls/
+public/uploads/originals/
+.env
+*.db
