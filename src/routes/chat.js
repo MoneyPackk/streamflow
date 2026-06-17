@@ -10,7 +10,7 @@ const ALLOWED_COMMANDS = [
 function chatRoutes() {
   const router = express.Router();
 
-  router.post('/chat', (req, res) => {
+  router.post('/', (req, res) => {
     const { command } = req.body;
     if (!command || typeof command !== 'string') {
       return res.status(400).json({ error: 'Command required' });
