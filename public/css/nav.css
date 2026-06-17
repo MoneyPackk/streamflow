@@ -8,6 +8,7 @@
   padding: 0 40px; height: 60px;
   box-shadow: 0 1px 0 rgba(255,255,255,.03), 0 4px 30px rgba(0,0,0,.4);
   transition: background var(--dur-medium), border-color var(--dur-medium);
+  pointer-events: auto;
 }
 .top-nav.scrolled { background: rgba(3,3,8,.92); border-bottom-color: var(--border-default); }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; max-width: 1480px; margin: 0 auto; }
@@ -81,8 +82,6 @@
   box-shadow: 0 0 0 3px var(--primary-surface);
 }
 .nav-search #search::placeholder { color: var(--text-subtle); }
-
-#page-player { padding-top: 60px; }
 
 .search-results {
   position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);

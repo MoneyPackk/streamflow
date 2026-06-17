@@ -145,7 +145,7 @@
 .comment-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--primary-surface); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-bright); flex-shrink: 0; font-size: .85rem; }
 .comment-body { font-size: .84rem; color: var(--text-secondary); line-height: 1.5; }
 
-.back-btn { background: none; border: none; color: var(--text-muted); padding: 10px 48px; cursor: pointer; font-size: .82rem; transition: color var(--dur-quick); position: relative; z-index: 100; }
+.back-btn { background: none; border: none; color: var(--text-muted); padding: 70px 48px 10px; cursor: pointer; font-size: .82rem; transition: color var(--dur-quick); display: inline-block; }
 .back-btn:hover { color: var(--primary-bright); }
 
 .continue-bar { margin: 0; padding: 10px 16px; background: rgba(10,10,30,.95); border-bottom: 1px solid var(--border-subtle); backdrop-filter: blur(12px); }
