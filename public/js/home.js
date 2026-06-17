@@ -1,5 +1,5 @@
 import { api, sanitize } from './api.js';
-import { renderCard } from './templates.js';
+import { renderCard, renderContinueCard } from './templates.js';
 import { getWatchHistory, saveWatchHistory } from './storage.js';
 import { user } from './auth.js';
 
@@ -230,10 +230,31 @@ export async function loadHome() {
 
     if (user) {
       try {
+        const cont = await api('/content/continue/list');
+        if (cont.items?.length > 0) {
+          document.getElementById('continue-section').style.display = 'block';
+          const row = document.getElementById('continue-row');
+          row.innerHTML = cont.items.map(h => renderContinueCard({
+            tmdb_id: h.tmdb_id, type: h.media_type || 'movie', title: h.title,
+            poster_url: h.poster_url, progress_seconds: h.progress_seconds,
+            runtime_seconds: h.runtime_seconds, vote_average: 0, release_year: null,
+          })).join('');
+        }
+      } catch(e) { console.warn('[PS]', e); }
+
+      try {
         const favs = await api('/content/favorites/list');
         if (favs.length > 0) {
           document.getElementById('recommended-section').style.display = 'block';
           renderRow('recommended-row', trending.items.concat(nowPlaying.items).slice(0, 20));
+        }
+      } catch(e) { console.warn('[PS]', e); }
+
+      try {
+        const rec = await api('/social/recommendations');
+        if (rec.items?.length > 0) {
+          document.getElementById('recommended-section').style.display = 'block';
+          renderRow('recommended-row', rec.items.slice(0, 20));
         }
       } catch(e) { console.warn('[PS]', e); }
     }

@@ -3,7 +3,7 @@ import { loadSession, isAuthenticated, toggleAuth, handleAuth, logout, updateNav
 import { loadHome, filterEnglishTitles, loadGenreContent, closeGenre, loadMoreGenre, loadStudioContent, scrollRow, renderRow } from './home.js';
 import { debounceSearch, performSearch, loadMoreSearch, openSearchFilters, closeSearchFilters, applyFilters, initSearch } from './search.js';
 import { openDetail, closeDetail, playFromDetail, openTrailer, closeTrailer, initDetailModal } from './detail.js';
-import { playContent, stopPlayer, playTVEpisode, prevEpisode, nextEpisode, toggleFullscreen, togglePip, toggleTheater, setVolume, toggleMute, getPlayerState } from './player.js';
+import { playContent, stopPlayer, playTVEpisode, prevEpisode, nextEpisode, playNextEpisode, cancelCountdown, toggleFullscreen, togglePip, toggleTheater, setVolume, toggleMute, getPlayerState } from './player.js';
 import { toggleFavorite, loadPlayerExtras, loadComments, likeComment, replyComment, postComment, showTrailer, shareTitle, loadFavorites, loadWatchlist, loadForYou, loadNotifications, markAllNotifsRead, loadContinueWatching } from './social.js';
 import { loadProfile, saveProfile } from './profile.js';
 import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, updateContinueBar, hideContinueBar } from './ui.js';
@@ -56,6 +56,8 @@ function exposeAll() {
   window.toggleMute = toggleMute;
   window.prevEpisode = prevEpisode;
   window.nextEpisode = nextEpisode;
+  window.playNextEpisode = playNextEpisode;
+  window.cancelCountdown = cancelCountdown;
   window.playTVEpisode = playTVEpisode;
   window.updateContinueNav = updateContinueNav;
   window.reinitScrollAnimations = reinitScrollAnimations;

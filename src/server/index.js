@@ -85,6 +85,16 @@ app.use('/api/social', socialRoutes(db));
 app.use('/api/settings', settingsRoutes(db));
 app.use('/api/search', searchRoutes());
 
+app.get('/api/health', (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'PeacocksStreams',
+    version: process.env.npm_package_version || '1.0.0',
+    uptime: Math.floor(process.uptime()),
+    time: new Date().toISOString(),
+  });
+});
+
 const server = http.createServer(app);
 const { broadcast } = initWebSocket(server);
 

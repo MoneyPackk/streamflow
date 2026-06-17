@@ -7,7 +7,9 @@
     "start": "node src/server/index.js",
     "dev": "node --watch src/server/index.js",
     "audit": "node audit.js",
-    "test": "node audit.js"
+    "test": "node audit.js",
+    "monitor": "node scripts/monitor.mjs",
+    "health": "node -e \"fetch('http://localhost:3000/api/health').then(r=>r.json()).then(console.log)\""
   },
   "keywords": [],
   "author": "",

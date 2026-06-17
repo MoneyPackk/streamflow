@@ -17,6 +17,9 @@ export function getPlayerState() {
 }
 
 export function stopPlayer() {
+  clearTimeout(window._sourceRetryTimer);
+  clearTimeout(window._nextEpOfferTimer);
+  cancelCountdown();
   const container = document.getElementById('player-container');
   const loading = document.getElementById('stream-loading');
   const noStreams = document.getElementById('no-streams');
@@ -145,6 +148,44 @@ export function nextEpisode() {
   if (current < max) { epSel.value = current + 1; playTVEpisode(); }
 }
 
+let countdownTimer = null;
+
+export function cancelCountdown() {
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = null;
+  const el = document.getElementById('next-ep-countdown');
+  if (el) el.style.display = 'none';
+}
+
+export function playNextEpisode() {
+  cancelCountdown();
+  nextEpisode();
+}
+
+function scheduleNextEpisodeOffer() {
+  if (currentMediaType !== 'tv') return;
+  const epSel = document.getElementById('episode-select');
+  if (!epSel) return;
+  const current = parseInt(epSel.value, 10);
+  const max = epSel.options.length;
+  if (current >= max) return;
+  cancelCountdown();
+  const el = document.getElementById('next-ep-countdown');
+  const span = document.getElementById('countdown-seconds');
+  if (!el || !span) return;
+  el.style.display = 'block';
+  let left = 12;
+  span.textContent = left;
+  countdownTimer = setInterval(() => {
+    left -= 1;
+    span.textContent = left;
+    if (left <= 0) {
+      cancelCountdown();
+      nextEpisode();
+    }
+  }, 1000);
+}
+
 export function toggleFullscreen() {
   const wrapper = document.querySelector('.player-wrapper');
   if (!document.fullscreenElement) {
@@ -228,7 +269,8 @@ async function loadEmbedSources(tmdbId, type, season, episode) {
     const serverList = document.getElementById('server-list');
     if (serverBtns && serverList) {
       serverBtns.innerHTML = sources.map((s, i) => {
-        return `<button class="server-btn${i === bestIdx ? ' active' : ''}" data-idx="${i}">Peacock Source ${i + 1}</button>`;
+        const label = s.name || `Source ${i + 1}`;
+        return `<button class="server-btn${i === bestIdx ? ' active' : ''}" data-idx="${i}" title="${sanitize(label)}">${sanitize(label)}</button>`;
       }).join('');
       serverList.style.display = 'block';
       serverBtns.querySelectorAll('.server-btn').forEach(btn => {
@@ -262,6 +304,9 @@ function switchServer(idx) {
       const nextIdx = (idx + 1) % currentSources.length;
       if (nextIdx !== idx) switchServer(nextIdx);
     }, 8000);
+  }
+  if (currentMediaType === 'tv') {
+    window._nextEpOfferTimer = setTimeout(scheduleNextEpisodeOffer, 8 * 60 * 1000);
   }
 }
 
