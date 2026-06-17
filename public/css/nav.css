@@ -1,6 +1,6 @@
 /* ─── NAVIGATION ─── */
 .top-nav {
-  position: fixed; top: 0; width: 100%; z-index: 1000;
+  position: fixed; top: 0; width: 100%; z-index: 500;
   background: rgba(3,3,8,.75);
   backdrop-filter: blur(24px) saturate(2);
   -webkit-backdrop-filter: blur(24px) saturate(2);
@@ -81,6 +81,8 @@
   box-shadow: 0 0 0 3px var(--primary-surface);
 }
 .nav-search #search::placeholder { color: var(--text-subtle); }
+
+#page-player { padding-top: 60px; }
 
 .search-results {
   position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
