@@ -135,9 +135,11 @@ async function init() {
     });
   });
 
-  // Register service worker
+  // Unregister any old service workers (SW was caching stale JS)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister());
+    });
   }
 }
 

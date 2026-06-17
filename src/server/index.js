@@ -63,12 +63,12 @@ app.use('/api/auth/', authLimiter);
 
 // Static assets with long cache for fingerprinted files
 app.use(express.static(path.join(__dirname, '..', '..', 'public'), {
-  maxAge: '7d',
+  maxAge: '1h',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.css') || filePath.endsWith('.js')) {
-      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
     } else if (filePath.match(/\.(png|jpg|jpeg|gif|webp|svg|ico)$/)) {
-      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
     }
   }
 }));
