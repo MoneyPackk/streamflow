@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🦚 Peacock Terminal</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #030308; color: #f0f0ff; font-family: 'JetBrains Mono', monospace; height: 100vh; display: flex; flex-direction: column; }
+    .lock-screen { display: flex; height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
+    .lock-screen h1 { font-size: 2rem; margin-bottom: 6px; }
+    .lock-screen p { color: #8080aa; margin-bottom: 24px; font-size: .85rem; }
+    .lock-screen input { width: 100%; max-width: 300px; padding: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(139,92,246,.3); border-radius: 12px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 1rem; text-align: center; margin-bottom: 8px; outline: none; }
+    .lock-screen input:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,.15); }
+    .lock-screen .btn { width: 100%; max-width: 300px; padding: 14px; background: linear-gradient(135deg, #8b5cf6, #06b6d4); color: #fff; border: none; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: .95rem; font-weight: 600; cursor: pointer; }
+    .lock-screen .btn:active { transform: scale(.97); }
+    .lock-screen .error { color: #ef4444; font-size: .75rem; margin-top: 8px; }
+    .terminal { display: none; height: 100vh; flex-direction: column; }
+    .terminal.active { display: flex; }
+    .output { flex: 1; overflow-y: auto; padding: 12px 16px; font-size: .8rem; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+    .output .prompt { color: #c084fc; }
+    .output .cmd { color: #22d3ee; }
+    .output .result { color: #c0c0e0; }
+    .output .error { color: #ef4444; }
+    .input-line { display: flex; padding: 8px 12px; background: rgba(0,0,0,.4); border-top: 1px solid rgba(139,92,246,.1); }
+    .input-line .ps1 { color: #c084fc; padding: 10px 6px 10px 0; font-weight: 600; font-size: .85rem; flex-shrink: 0; }
+    .input-line input { flex: 1; padding: 10px; background: transparent; border: none; color: #22d3ee; font-family: 'JetBrains Mono', monospace; font-size: .82rem; outline: none; }
+    .shortcuts { display: flex; gap: 4px; padding: 4px 8px; overflow-x: auto; flex-shrink: 0; border-top: 1px solid rgba(139,92,246,.08); }
+    .shortcuts button { padding: 6px 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 8px; color: #8080aa; font-family: 'JetBrains Mono', monospace; font-size: .65rem; cursor: pointer; white-space: nowrap; }
+    .shortcuts button:active { background: rgba(139,92,246,.2); color: #fff; }
+  </style>
+</head>
+<body>
+<div class="lock-screen" id="login">
+  <h1>🦚</h1>
+  <p>Peacock Terminal</p>
+  <input type="password" id="pass-input" placeholder="Password" onkeydown="if(event.key==='Enter')unlock()" autofocus>
+  <button class="btn" onclick="unlock()">Unlock</button>
+  <div class="error" id="login-error"></div>
+</div>
+
+<div class="terminal" id="term">
+  <div class="output" id="output">
+    <div class="result">🦚 Peacock Terminal — connected to streamflow server</div>
+    <div class="result">Type 'help' for commands, 'exit' to lock</div>
+    <div class="result"></div>
+  </div>
+  <div class="shortcuts" id="shortcuts"></div>
+  <div class="input-line">
+    <span class="ps1">$</span>
+    <input type="text" id="cmd" placeholder="command..." onkeydown="handleKey(event)" autofocus>
+  </div>
+</div>
+
+<script>
+const AUTH = 'peacock8080';
+const COMMANDS = {
+  restart: 'systemctl restart streamflow && sleep 1 && curl -s -o /dev/null -w "HTTP %{http_code}" http://localhost:3000',
+  logs: 'journalctl -u streamflow --no-pager -n 20',
+  deploy: 'cd /opt/streamflow && git pull origin master && npm install --omit=dev 2>&1 | tail -3 && systemctl restart streamflow && sleep 2 && curl -s -o /dev/null -w "HTTP %{http_code}" http://localhost:3000',
+  status: 'echo "=== Uptime ===" && uptime && echo && echo "=== Disk ===" && df -h / && echo && echo "=== Memory ===" && free -h && echo && echo "=== Services ===" && systemctl is-active streamflow nginx && echo && curl -s -o /dev/null -w "Site: HTTP %{http_code}" http://localhost:3000',
+  disk: 'df -h /',
+  memory: 'free -h',
+  uptime: 'uptime',
+  'ps aux': 'ps aux --sort=-%mem | head -15',
+  who: 'who',
+  help: 'echo "Commands: restart, logs, deploy, status, disk, memory, uptime, ps aux, who"',
+};
+
+const shortcuts = document.getElementById('shortcuts');
+Object.keys(COMMANDS).filter(k => k !== 'help').forEach(cmd => {
+  const btn = document.createElement('button');
+  btn.textContent = cmd;
+  btn.onclick = () => runCommand(cmd);
+  shortcuts.appendChild(btn);
+});
+
+function unlock() {
+  const pw = document.getElementById('pass-input').value;
+  if (pw === AUTH) {
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('term').classList.add('active');
+    document.getElementById('cmd').focus();
+    document.getElementById('login-error').textContent = '';
+  } else {
+    document.getElementById('login-error').textContent = 'Wrong password';
+    document.getElementById('pass-input').value = '';
+  }
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter') {
+    const cmd = e.target.value.trim();
+    if (cmd === 'exit') { lock(); return; }
+    if (cmd) runCommand(cmd);
+    e.target.value = '';
+  }
+}
+
+function addLine(text, cls) {
+  const div = document.createElement('div');
+  div.className = cls || 'result';
+  div.textContent = text;
+  const out = document.getElementById('output');
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+}
+
+async function runCommand(cmd) {
+  addLine('$ ' + cmd, 'cmd');
+  const shellCmd = COMMANDS[cmd] || cmd;
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: shellCmd })
+    });
+    const data = await res.json();
+    const output = data.output || data.error || 'Done';
+    output.split('\n').forEach(line => {
+      if (line.trim()) addLine(line, 'result');
+    });
+  } catch(e) {
+    addLine('Error: ' + e.message, 'error');
+  }
+}
+
+function lock() {
+  document.getElementById('term').classList.remove('active');
+  document.getElementById('login').style.display = 'flex';
+  document.getElementById('pass-input').value = '';
+  document.getElementById('pass-input').focus();
+}
+
+document.getElementById('pass-input').focus();
+</script>
+</body>
+</html>
