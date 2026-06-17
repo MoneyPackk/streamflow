@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🦚 Peacock Control</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #030308; color: #f0f0ff;
+      min-height: 100vh; padding: 16px;
+      display: flex; flex-direction: column;
+    }
+    .header {
+      text-align: center; padding: 20px 0;
+    }
+    .header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, #c084fc, #22d3ee);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header p { color: #8080aa; font-size: .82rem; margin-top: 4px; }
+    .card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(139,92,246,.15);
+      border-radius: 14px; padding: 18px; margin-bottom: 12px;
+    }
+    .card h3 { font-size: .9rem; margin-bottom: 6px; color: #c084fc; }
+    .status { display: flex; gap: 8px; align-items: center; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.green { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,.5); }
+    .dot.red { background: #ef4444; }
+    .btn {
+      display: block; width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+      color: #fff; border: none; border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: .9rem; font-weight: 700;
+      cursor: pointer; margin: 8px 0; text-align: center; text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn.secondary {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1); color: #c0c0e0;
+    }
+    .chat-box {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(139,92,246,.2);
+      border-radius: 12px; padding: 12px; flex: 1;
+      overflow-y: auto; max-height: 40vh; margin-bottom: 12px;
+      font-size: .82rem; line-height: 1.6;
+    }
+    .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 10px; }
+    .chat-msg.user { background: rgba(139,92,246,.2); margin-left: 20%; }
+    .chat-msg.agent { background: rgba(6,182,212,.1); margin-right: 20%; }
+    .input-row { display: flex; gap: 8px; }
+    .input-row input {
+      flex: 1; padding: 12px; background: rgba(255,255,255,.06);
+      border: 1px solid rgba(139,92,246,.2); border-radius: 12px;
+      color: #fff; font-family: 'Inter', sans-serif; font-size: .88rem; outline: none;
+    }
+    .input-row input:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,.15); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🦚 Peacock Control</h1>
+    <p>Streaming Platform Dashboard</p>
+  </div>
+
+  <div class="card">
+    <h3>System Status</h3>
+    <div class="status">
+      <span class="dot green" id="site-dot"></span>
+      <span id="site-status">Checking...</span>
+    </div>
+    <div style="margin-top:8px;font-size:.78rem;color:#8080aa" id="site-detail"></div>
+  </div>
+
+  <a href="https://moneypack.wtf" class="btn" style="text-decoration:none;">🎬 Open Streaming Site</a>
+
+  <h3 style="font-size:.85rem;margin:16px 0 8px;color:#8080aa;">Quick Commands</h3>
+  <div class="actions">
+    <button class="btn secondary" onclick="sendCmd('restart site')">🔄 Restart Site</button>
+    <button class="btn secondary" onclick="sendCmd('check logs')">📋 Check Logs</button>
+    <button class="btn secondary" onclick="sendCmd('git pull and deploy')">⬇️ Update Site</button>
+    <button class="btn secondary" onclick="sendCmd('status')">📊 Full Status</button>
+  </div>
+
+  <h3 style="font-size:.85rem;margin:20px 0 8px;color:#8080aa;">Command Output</h3>
+  <div class="chat-box" id="output-box">
+    <div class="chat-msg agent">Ready. Type a command or tap a button above.</div>
+  </div>
+
+  <div class="input-row">
+    <input type="text" id="cmd-input" placeholder="Type command..." onkeydown="if(event.key==='Enter')sendCmd()">
+    <button class="btn" style="width:auto;padding:12px 20px;flex-shrink:0" onclick="sendCmd()">Send</button>
+  </div>
+
+  <script>
+    const API = '/api/chat';
+    const output = document.getElementById('output-box');
+
+    function addMsg(text, type) {
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + type;
+      div.textContent = text;
+      output.appendChild(div);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    async function sendCmd(cmd) {
+      const input = document.getElementById('cmd-input');
+      const command = cmd || input.value.trim();
+      if (!command) return;
+      if (!cmd) input.value = '';
+      addMsg(command, 'user');
+      addMsg('Running...', 'agent');
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command }),
+          credentials: 'include'
+        });
+        const data = await res.json();
+        output.lastChild.textContent = data.output || data.error || 'Done';
+      } catch(e) {
+        output.lastChild.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/tmdb/trending', { credentials: 'include' });
+        const dot = document.getElementById('site-dot');
+        const status = document.getElementById('site-status');
+        const detail = document.getElementById('site-detail');
+        if (res.ok) {
+          dot.className = 'dot green';
+          status.textContent = 'Online — All systems go';
+          const data = await res.json();
+          detail.textContent = `${data.items?.length || 0} trending titles loaded`;
+        } else {
+          dot.className = 'dot red';
+          status.textContent = 'Degraded';
+          detail.textContent = 'API returned ' + res.status;
+        }
+      } catch(e) {
+        document.getElementById('site-dot').className = 'dot red';
+        document.getElementById('site-status').textContent = 'Offline';
+        document.getElementById('site-detail').textContent = e.message;
+      }
+    }
+
+    checkStatus();
+    setInterval(checkStatus, 30000);
+  </script>
+</body>
+</html>

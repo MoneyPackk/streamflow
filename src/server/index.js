@@ -19,6 +19,7 @@ const socialRoutes = require('../routes/social');
 const partiesRoutes = require('../routes/parties');
 const settingsRoutes = require('../routes/settings');
 const searchRoutes = require('../routes/search');
+const chatRoutes = require('../routes/chat');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -86,6 +87,7 @@ app.use('/api/embed', embedRoutes());
 app.use('/api/social', socialRoutes(db));
 app.use('/api/settings', settingsRoutes(db));
 app.use('/api/search', searchRoutes());
+app.use('/api/chat', chatRoutes());
 
 app.get('/api/health', (_req, res) => {
   res.json({

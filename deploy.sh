@@ -11,7 +11,7 @@ REPO="https://github.com/MoneyPackk/streamflow.git"
 echo "=== Updating packages ==="
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq git curl nginx certbot python3-certbot-nginx
+apt-get install -y -qq git curl nginx certbot python3-certbot-nginx build-essential python3
 
 # Node 20 via NodeSource
 if ! command -v node >/dev/null || [[ $(node -v | cut -d. -f1 | tr -d v) -lt 20 ]]; then

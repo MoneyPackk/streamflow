@@ -30,6 +30,7 @@
     "jsdom": "^29.1.1",
     "jsonwebtoken": "^9.0.3",
     "playwright": "^1.60.0",
+    "ssh2": "^1.17.0",
     "ws": "^8.21.0"
   },
   "devDependencies": {
