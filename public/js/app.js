@@ -6,7 +6,7 @@ import { openDetail, closeDetail, playFromDetail, openTrailer, closeTrailer, ini
 import { playContent, stopPlayer, playTVEpisode, prevEpisode, nextEpisode, playNextEpisode, cancelCountdown, toggleFullscreen, togglePip, toggleTheater, setVolume, toggleMute, getPlayerState } from './player.js';
 import { toggleFavorite, loadPlayerExtras, loadComments, likeComment, replyComment, postComment, showTrailer, shareTitle, loadFavorites, loadWatchlist, loadForYou, loadNotifications, markAllNotifsRead, loadContinueWatching } from './social.js';
 import { loadProfile, saveProfile } from './profile.js';
-import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, updateContinueBar, hideContinueBar } from './ui.js';
+import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, dismissWelcome, updateContinueBar, hideContinueBar } from './ui.js';
 import { initPartyUI, updatePartyPanelVisibility } from './parties.js';
 import { getWatchHistory, saveWatchHistory, getTheme, setTheme } from './storage.js';
 import { renderCard, renderTopTen, renderSkeletons } from './templates.js';
@@ -69,6 +69,7 @@ function exposeAll() {
   window.openTrailer = openTrailer;
   window.closeTrailer = closeTrailer;
   window.updatePartyPanelVisibility = updatePartyPanelVisibility;
+  window.debounceSearch = debounceSearch;
 }
 
 async function init() {
@@ -158,6 +159,15 @@ async function init() {
       regs.forEach(reg => reg.unregister());
     });
   }
+
+  dismissWelcome();
 }
 
-init();
+init().catch((err) => {
+  console.error('App init failed:', err);
+  dismissWelcome();
+  document.getElementById('toast-container')?.insertAdjacentHTML(
+    'beforeend',
+    '<div class="toast error"><span class="toast-icon">✕</span><span>Failed to load app — try a hard refresh (Ctrl+Shift+R)</span></div>'
+  );
+});

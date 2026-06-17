@@ -67,7 +67,9 @@ app.use('/api/auth/', authLimiter);
 app.use(express.static(path.join(__dirname, '..', '..', 'public'), {
   maxAge: '1h',
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.css') || filePath.endsWith('.js')) {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else if (filePath.endsWith('.css') || filePath.endsWith('.js')) {
       res.setHeader('Cache-Control', 'public, max-age=3600');
     } else if (filePath.match(/\.(png|jpg|jpeg|gif|webp|svg|ico)$/)) {
       res.setHeader('Cache-Control', 'public, max-age=86400');

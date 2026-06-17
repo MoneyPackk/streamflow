@@ -208,20 +208,30 @@ export function handleUrlParams() {
   }
 }
 
+export function dismissWelcome() {
+  const overlay = document.getElementById('welcome-overlay');
+  if (!overlay) return;
+  overlay.classList.add('hide');
+  overlay.style.display = 'none';
+  try { localStorage.setItem('ps_welcomed_v1', '1'); } catch {}
+}
+
 export function showWelcome() {
-  const WELCOME_KEY = 'ps_welcomed_v1';
-  if (!localStorage.getItem(WELCOME_KEY)) {
-    setTimeout(() => {
-      const overlay = document.getElementById('welcome-overlay');
-      setTimeout(() => {
-        overlay.classList.add('hide');
-        setTimeout(() => {
-          overlay.style.display = 'none';
-          localStorage.setItem(WELCOME_KEY, '1');
-        }, 800);
-      }, 2200);
-    }, 400);
-  } else {
-    document.getElementById('welcome-overlay').style.display = 'none';
+  const overlay = document.getElementById('welcome-overlay');
+  if (!overlay) return;
+
+  let seen = false;
+  try { seen = !!localStorage.getItem('ps_welcomed_v1'); } catch {}
+
+  if (seen) {
+    dismissWelcome();
+    return;
   }
+
+  // First visit: brief splash, then always dismiss (with hard fallback)
+  setTimeout(() => {
+    overlay.classList.add('hide');
+    setTimeout(dismissWelcome, 600);
+  }, 1800);
+  setTimeout(dismissWelcome, 4000);
 }

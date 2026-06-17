@@ -47,6 +47,25 @@
     </div>
   </div>
 
+  <script>
+    (function () {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (r) { r.unregister(); });
+        });
+      }
+      function hideWelcome() {
+        var el = document.getElementById('welcome-overlay');
+        if (!el) return;
+        el.classList.add('hide');
+        el.style.display = 'none';
+        try { localStorage.setItem('ps_welcomed_v1', '1'); } catch (e) {}
+      }
+      document.getElementById('welcome-overlay')?.addEventListener('click', hideWelcome);
+      setTimeout(hideWelcome, 4000);
+    })();
+  </script>
+
   <!-- Back to top button -->
   <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑</button>
 
@@ -772,7 +791,7 @@
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=6"></script>
+  <script type="module" src="/js/app.js?v=7"></script>
 
   <nav class="mobile-tabs" id="mobile-tabs" aria-label="Mobile navigation">
     <div class="mobile-tabs-inner">
