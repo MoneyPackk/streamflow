@@ -83,8 +83,10 @@
 }
 .nav-search #search::placeholder { color: var(--text-subtle); }
 
-#page-player > .back-btn { padding-top: 70px; }
-.player-meta { margin-top: 60px; }
+/* Player page content offset to clear fixed nav */
+#page-player {
+  padding-top: 60px;
+}
 
 .search-results {
   position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
