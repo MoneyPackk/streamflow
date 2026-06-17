@@ -1,17 +1,22 @@
 #!/usr/bin/env node
-// PeacocksStreams — Hourly Bug Monitor
+// PeacocksStreams — production smoke monitor
 
 import https from 'https';
-import http from 'http';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const BASE = 'https://moneypack.wtf';
-const LOG_FILE = '/var/log/peacocks-monitor.log';
+const BASE = process.env.MONITOR_URL || 'https://moneypack.wtf';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOG_FILE = process.env.MONITOR_LOG || path.join(__dirname, '..', 'data', 'monitor.log');
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
   console.log(line);
-  fs.appendFileSync(LOG_FILE, line + '\n');
+  try {
+    fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
+    fs.appendFileSync(LOG_FILE, line + '\n');
+  } catch { /* optional file log */ }
 }
 
 function fetch(path) {
@@ -27,6 +32,16 @@ function fetch(path) {
 
 async function run() {
   const failures = [];
+
+  // 0. Health
+  try {
+    const health = await fetch('/api/health');
+    if (health.status !== 200) failures.push(`Health returned ${health.status}`);
+    else {
+      const body = JSON.parse(health.body);
+      if (!body.ok) failures.push('Health ok=false');
+    }
+  } catch (e) { failures.push(`Health error: ${e.message}`); }
 
   // 1. Homepage
   try {
@@ -107,7 +122,7 @@ async function run() {
 
   // Result
   if (failures.length === 0) {
-    log('✅ ALL 10 CHECKS PASSED');
+    log(`✅ ALL ${11} CHECKS PASSED (${BASE})`);
   } else {
     log(`❌ ${failures.length} FAILURES:\n  - ${failures.join('\n  - ')}`);
   }
