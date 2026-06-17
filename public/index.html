@@ -1,86 +1,714 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StreamFlow</title>
-<link rel="stylesheet" href="/css/style.css">
-<link href="https://cdn.jsdelivr.net/npm/video.js@8/dist/video-js.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeacocksStreams — Watch Free Movies & TV Shows</title>
+  <meta name="description" content="Stream the latest movies and TV shows for free. No registration required. HD quality, multiple sources.">
+  <meta property="og:title" content="PeacocksStreams">
+  <meta property="og:description" content="Unlimited movies & TV. 100% ad-free. Zero bullshit. 🦚">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://moneypack.wtf">
+  <meta property="og:image" content="https://moneypack.wtf/images/peacock-user.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PeacocksStreams — Watch Free Movies & TV Shows">
+  <meta name="twitter:description" content="Unlimited movies & TV. 100% ad-free. Zero bullshit. 🦚">
+  <meta name="twitter:image" content="https://moneypack.wtf/images/peacock-user.png">
+  <meta name="theme-color" content="#06060a">
+  <link rel="icon" href="/images/peacock-user.png">
+  <link rel="apple-touch-icon" href="/images/peacock-pfp.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/nav.css">
+  <link rel="stylesheet" href="/css/hero.css">
+  <link rel="stylesheet" href="/css/cards.css">
+  <link rel="stylesheet" href="/css/player.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/utils.css">
 </head>
 <body>
-  <nav id="nav">
+  <!-- Welcome Animation -->
+  <div class="welcome-overlay" id="welcome-overlay">
+    <div class="welcome-content">
+      <img src="/images/peacock-user.png" class="welcome-peacock" alt="PeacocksStreams">
+      <h1 class="welcome-title">PeacocksStreams</h1>
+      <p class="welcome-subtitle">Welcome to the flock 🦚</p>
+      <p class="welcome-tagline">Unlimited movies & TV. 100% ad-free. Zero bullshit.</p>
+      <div class="welcome-loader"></div>
+    </div>
+  </div>
+
+  <!-- Back to top button -->
+  <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑</button>
+
+  <!-- Toast notifications -->
+  <div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- Keyboard shortcuts cheat sheet -->
+  <div class="shortcuts-modal" id="shortcuts-modal" style="display:none" role="dialog" aria-label="Keyboard shortcuts">
+    <div class="shortcuts-content">
+      <button class="shortcuts-close" onclick="toggleShortcuts(false)" aria-label="Close">×</button>
+      <h2>⌨️ Keyboard Shortcuts</h2>
+      <div class="shortcuts-grid">
+        <div class="shortcut-row"><kbd>/</kbd><span>Focus search</span></div>
+        <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+        <div class="shortcut-row"><kbd>Esc</kbd><span>Close / back</span></div>
+        <div class="shortcut-row"><kbd>F</kbd><span>Fullscreen player</span></div>
+        <div class="shortcut-row"><kbd>M</kbd><span>Mute / unmute</span></div>
+        <div class="shortcut-row"><kbd>Space</kbd><span>Play / pause</span></div>
+        <div class="shortcut-row"><kbd>←</kbd><span>Seek -10s</span></div>
+        <div class="shortcut-row"><kbd>→</kbd><span>Seek +10s</span></div>
+        <div class="shortcut-row"><kbd>↑</kbd><span>Volume up</span></div>
+        <div class="shortcut-row"><kbd>↓</kbd><span>Volume down</span></div>
+        <div class="shortcut-row"><kbd>K</kbd><span>Next episode</span></div>
+        <div class="shortcut-row"><kbd>J</kbd><span>Previous episode</span></div>
+        <div class="shortcut-row"><kbd>L</kbd><span>Like / rate</span></div>
+        <div class="shortcut-row"><kbd>P</kbd><span>Picture-in-picture</span></div>
+        <div class="shortcut-row"><kbd>T</kbd><span>Theater mode</span></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="top-nav">
     <div class="nav-inner">
-      <a href="#" class="logo" onclick="showPage('browse')">StreamFlow</a>
+      <a href="#" class="logo" onclick="showPage('browse')">
+        <img src="/images/peacock-tiny.png" alt="PeacocksStreams" class="peacock-icon">
+        <span class="logo-text">PeacocksStreams</span>
+      </a>
       <div class="nav-links">
-        <a href="#" onclick="showPage('browse')">Browse</a>
+        <a href="#" onclick="showPage('browse')">Home</a>
+        <a href="#" onclick="showSection('movies')">Movies</a>
+        <a href="#" onclick="showSection('tv')">TV Shows</a>
+        <a href="#" id="nav-foryou" onclick="showPage('foryou')" style="display:none">For You</a>
+        <a href="#" id="nav-continue" onclick="showPage('continue')" style="display:none">Continue</a>
         <a href="#" id="nav-favorites" onclick="showPage('favorites')" style="display:none">Favorites</a>
-        <a href="#" id="nav-admin" onclick="showPage('admin')" style="display:none">Upload</a>
+        <a href="#" id="nav-watchlist" onclick="showPage('watchlist')" style="display:none">Watchlist</a>
+        <a href="#" id="nav-profile" onclick="showPage('profile')" style="display:none">Profile</a>
+        <a href="#" id="nav-notifications" onclick="showPage('notifications')" style="display:none" title="Notifications">
+          🔔 <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+        </a>
+        <button class="theme-toggle" id="theme-toggle" onclick="cycleTheme()" aria-label="Toggle theme">🌙</button>
+        <button class="shortcuts-btn" onclick="toggleShortcuts(true)" aria-label="Keyboard shortcuts">⌨</button>
         <a href="#" id="nav-login" onclick="showPage('login')">Sign In</a>
-        <a href="#" id="nav-logout" onclick="logout()" style="display:none">Sign Out</a>
+        <a href="#" id="nav-logout" onclick="logout()" style="display:none">
+          <img src="/images/peacock-pfp.png" class="user-pfp" alt="Your profile">
+          <span id="nav-username">Account</span> · Sign Out
+        </a>
+        <span class="ad-free-badge">✓ 100% Ad-Free</span>
+      </div>
+    </div>
+    <!-- Mobile search bar below nav -->
+    <div class="nav-search">
+      <div class="search-wrapper">
+        <input type="text" id="search" placeholder="Search movies, TV shows..." autocomplete="off" aria-label="Search" oninput="debounceSearch()" onkeydown="if(event.key==='Enter')performSearch()" onfocus="this.select()">
+        <div class="search-results" id="search-results" style="display:none">
+          <div class="search-header">
+            <h3 id="search-heading">Search</h3>
+            <button class="search-filters-btn" onclick="openSearchFilters()" aria-label="Filters">⚙</button>
+          </div>
+          <div class="search-autocomplete" id="search-autocomplete" style="display:none"></div>
+          <div class="content-grid" id="search-grid"></div>
+          <div class="load-more"><button onclick="loadMoreSearch()" id="search-more-btn" style="display:none">Load More</button></div>
+        </div>
       </div>
     </div>
   </nav>
 
-  <main>
-    <div id="page-browse" class="page active">
-      <div class="hero" id="hero">
-        <div class="hero-content">
-          <h1 id="hero-title">Welcome to StreamFlow</h1>
-          <p id="hero-desc">New movies and shows. No ads. Just content.</p>
+  <!-- Continue Watching bar (persistent) -->
+  <div id="continue-bar" class="continue-bar" style="display:none">
+    <div class="continue-bar-inner">
+      <div class="continue-bar-info">
+        <div class="continue-bar-thumb" id="continue-bar-thumb"></div>
+        <div class="continue-bar-text">
+          <div class="continue-bar-label">Continue Watching</div>
+          <div class="continue-bar-title" id="continue-bar-title"></div>
+          <div class="continue-bar-meta">
+            <span id="continue-bar-meta"></span>
+            <div class="continue-bar-progress" id="continue-bar-progress">
+              <div class="continue-bar-progress-fill" id="continue-bar-progress-fill"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="filters">
-        <input type="text" id="search" placeholder="Search titles..." oninput="debounceSearch()">
-        <select id="genre-filter" onchange="loadContent()"><option value="">All Genres</option></select>
-        <select id="type-filter" onchange="loadContent()"><option value="">All Types</option><option value="movie">Movies</option><option value="show">Shows</option></select>
+      <button class="continue-bar-btn" id="continue-bar-btn">▶ Resume</button>
+      <button class="continue-bar-close" onclick="hideContinueBar()" aria-label="Close">×</button>
+    </div>
+  </div>
+
+  <main>
+    <div id="page-browse" class="page active">
+      <!-- Trust Strip -->
+      <div class="trust-strip">
+        <div class="trust-strip-inner">
+          <div class="trust-item">
+            <span class="trust-icon">🦚</span>
+            <span class="trust-text">Peacock <b>Verified</b></span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item">
+            <span class="trust-icon">⚡</span>
+            <span class="trust-text">4K <b>Beast Mode</b></span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item">
+            <span class="trust-icon">🚫</span>
+            <span class="trust-text">Zero <b>Ads · Zero Bullshit</b></span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item trust-live">
+            <span class="trust-pulse"></span>
+            <span class="trust-text"><b id="trust-movies-count">10,000+</b> Titles Ready</span>
+          </div>
+        </div>
       </div>
-      <div class="content-grid" id="content-grid"></div>
+
+      <div class="hero-section" id="hero-section">
+        <div class="hero-backdrop" id="hero-backdrop"></div>
+        <div class="hero-content">
+          <div class="hero-badge-row">
+            <div class="hero-badge" id="hero-badge">🔥 TRENDING #1</div>
+            <div class="hero-verified-badge">
+              <span class="verified-check">✓</span> PEACOCK VERIFIED
+            </div>
+          </div>
+          <h1 id="hero-title">PeacocksStreams</h1>
+          <div class="hero-meta" id="hero-meta"></div>
+          <p id="hero-desc">Unlimited movies & TV shows. Free. No account needed.</p>
+          <div class="hero-actions" id="hero-actions" style="display:none">
+            <button class="hero-play-btn" id="hero-play-btn">
+              <span class="play-arrow">▶</span> Watch Now
+            </button>
+            <button class="hero-info-btn" id="hero-info-btn">More Info</button>
+          </div>
+          <div class="search-bar">
+            <input type="text" id="search-hero" placeholder="Search 10,000+ movies & TV shows..." autocomplete="off" aria-label="Search" onkeydown="if(event.key==='Enter'){document.getElementById('search').value=this.value;performSearch();}">
+            <button onclick="document.getElementById('search').value=document.getElementById('search-hero').value;performSearch();" aria-label="Search">🔍</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Genre Tabs -->
+      <div class="genre-tabs" id="genre-tabs"></div>
+
+      <!-- Search Results page (uses dropdown) -->
+
+      <!-- Home Sections -->
+      <div id="home-sections">
+        <div class="content-section top-ten-section">
+          <div class="section-header">
+            <h2>🔥 Top 10 Movies Today</h2>
+            <p class="section-subtitle">The hottest movies everyone's watching right now</p>
+          </div>
+          <div class="top-ten-grid" id="top-ten-grid"></div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>🎬 Now in <span id="now-playing-region">US</span> Theaters</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('nowplaying-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="nowplaying-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('nowplaying-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>🆕 New <span id="new-region">US</span> Releases</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('newus-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="newus-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('newus-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>📈 Trending Movies</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('trending-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="trending-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('trending-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>⭐ Top Rated Movies</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('topmovies-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="topmovies-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('topmovies-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>🎟️ Coming Soon to <span id="upcoming-region">US</span> Theaters</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('upcoming-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="upcoming-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('upcoming-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>📺 On The Air — TV</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('ontv-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="ontv-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('ontv-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>🏆 Top Rated TV Shows</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('toptv-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="toptv-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('toptv-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section" id="zeus-section" style="display:none">
+          <div class="section-header"><h2>⚡ Zeus Network</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('zeus-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="zeus-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('zeus-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section" id="recommended-section" style="display:none">
+          <div class="section-header"><h2>✨ Recommended for You</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('recommended-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="recommended-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('recommended-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section" id="recently-section" style="display:none">
+          <div class="section-header"><h2>👀 Recently Viewed</h2></div>
+          <div class="row-wrapper">
+            <button class="row-arrow row-arrow-left" onclick="scrollRow('recently-row', -1)" aria-label="Scroll left">‹</button>
+            <div class="content-row" id="recently-row"></div>
+            <button class="row-arrow row-arrow-right" onclick="scrollRow('recently-row', 1)" aria-label="Scroll right">›</button>
+          </div>
+        </div>
+
+        <div class="content-section">
+          <div class="section-header"><h2>🎬 Browse by Studio</h2></div>
+          <div class="studio-grid">
+            <button class="studio-btn" onclick="loadStudioContent('Netflix')">Netflix</button>
+            <button class="studio-btn" onclick="loadStudioContent('HBO')">HBO</button>
+            <button class="studio-btn" onclick="loadStudioContent('Disney')">Disney+</button>
+            <button class="studio-btn" onclick="loadStudioContent('Marvel')">Marvel</button>
+            <button class="studio-btn" onclick="loadStudioContent('A24')">A24</button>
+            <button class="studio-btn" onclick="loadStudioContent('Lionsgate')">Lionsgate</button>
+            <button class="studio-btn" onclick="loadStudioContent('Universal')">Universal</button>
+            <button class="studio-btn" onclick="loadStudioContent('Paramount')">Paramount+</button>
+            <button class="studio-btn" onclick="loadStudioContent('Amazon')">Prime Video</button>
+            <button class="studio-btn" onclick="loadStudioContent('Apple')">Apple TV+</button>
+            <button class="studio-btn" onclick="loadStudioContent('Anime')">🌸 Anime</button>
+            <button class="studio-btn" onclick="loadStudioContent('Documentary')">🎓 Documentary</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="page-player" class="page">
-      <button class="back-btn" onclick="showPage('browse')">← Back</button>
-      <div class="player-container">
-        <video id="video-player" class="video-js vjs-big-play-centered" controls preload="auto" data-setup='{}'></video>
+    <!-- FOR YOU PAGE -->
+    <div id="page-foryou" class="page">
+      <div class="foryou-header">
+        <h1>✨ For You</h1>
+        <p>Personalized picks based on your ratings, favorites, and watch history.</p>
       </div>
-      <div class="player-info" id="player-info"></div>
-    </div>
-
-    <div id="page-login" class="page">
-      <div class="auth-form">
-        <h2 id="auth-title">Sign In</h2>
-        <input type="email" id="auth-email" placeholder="Email">
-        <input type="password" id="auth-password" placeholder="Password">
-        <input type="text" id="auth-username" placeholder="Username" style="display:none">
-        <p class="auth-error" id="auth-error"></p>
-        <button onclick="handleAuth()" id="auth-btn">Sign In</button>
-        <p class="auth-toggle" id="auth-toggle" onclick="toggleAuth()">Don't have an account? Register</p>
+      <div class="content-section">
+        <div class="section-header"><h2>Because You Watched</h2></div>
+        <div class="row-wrapper">
+          <div class="content-row" id="foryou-reason-row"></div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="section-header"><h2>🎯 Your Taste</h2></div>
+        <div class="content-grid" id="foryou-grid"></div>
       </div>
     </div>
 
+    <!-- PROFILE PAGE -->
+    <div id="page-profile" class="page">
+      <div class="profile-header">
+        <div class="profile-avatar-wrap">
+          <img src="/images/peacock-pfp.png" class="profile-avatar" id="profile-avatar" alt="Your profile avatar">
+          <div class="profile-pfp-skin" id="profile-pfp-skin"></div>
+        </div>
+        <div class="profile-info">
+          <h1 id="profile-username">Loading...</h1>
+          <p id="profile-bio" class="profile-bio">No bio yet</p>
+          <div class="profile-stats">
+            <div class="stat-box">
+              <div class="stat-value" id="profile-credits">0</div>
+              <div class="stat-label">🦚 Peacock Credits</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="profile-streak">0</div>
+              <div class="stat-label">🔥 Day Streak</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="profile-watched">0</div>
+              <div class="stat-label">🎬 Watched</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="profile-favs-count">0</div>
+              <div class="stat-label">❤️ Favorites</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value" id="profile-achievements">0</div>
+              <div class="stat-label">⚡ Achievements</div>
+            </div>
+          </div>
+          <div class="profile-stats-secondary">
+            <div class="stat-mini">
+              <div class="stat-mini-value" id="profile-hours">0h</div>
+              <div class="stat-mini-label">Total watched</div>
+            </div>
+            <div class="stat-mini">
+              <div class="stat-mini-value" id="profile-this-week">0h</div>
+              <div class="stat-mini-label">This week</div>
+            </div>
+            <div class="stat-mini">
+              <div class="stat-mini-value" id="profile-ratings-given">0</div>
+              <div class="stat-mini-label">Ratings given</div>
+            </div>
+            <div class="stat-mini">
+              <div class="stat-mini-value" id="profile-comments">0</div>
+              <div class="stat-mini-label">Comments</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h2>⚡ Achievements</h2>
+        <div class="achievements-grid" id="achievements-grid"></div>
+      </div>
+
+      <div class="profile-section">
+        <h2>📊 Activity</h2>
+        <div class="activity-feed" id="activity-feed"></div>
+      </div>
+
+      <div class="profile-section">
+        <h2>🦚 Peacock Store</h2>
+        <p class="store-balance">Balance: <strong id="store-balance">0</strong> 🦚</p>
+        <div class="store-tabs">
+          <button class="store-tab active" data-tab="themes">Themes</button>
+          <button class="store-tab" data-tab="pfp_skins">PFP Skins</button>
+          <button class="store-tab" data-tab="perks">Perks</button>
+        </div>
+        <div class="store-grid" id="store-grid"></div>
+      </div>
+
+      <div class="profile-section">
+        <h2>Customize</h2>
+        <div class="profile-edit">
+          <label>Bio</label>
+          <textarea id="profile-bio-input" maxlength="200" placeholder="Tell us about yourself..."></textarea>
+          <label>Favorite Genre</label>
+          <select id="profile-genre-input">
+            <option value="">— Pick one —</option>
+            <option value="Action">Action</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Drama">Drama</option>
+            <option value="Horror">Horror</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Romance">Romance</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Documentary">Documentary</option>
+            <option value="Animation">Animation</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Crime">Crime</option>
+          </select>
+          <button onclick="saveProfile()">Save Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATCHLIST -->
+    <div id="page-watchlist" class="page">
+      <div class="page-header">
+        <h1>📋 My Watchlist</h1>
+        <p>Movies & shows you want to watch later.</p>
+      </div>
+      <div class="content-grid" id="watchlist-grid"></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="page-notifications" class="page">
+      <div class="page-header">
+        <h1>🔔 Notifications</h1>
+        <button onclick="markAllNotifsRead()" class="btn-secondary">Mark all as read</button>
+      </div>
+      <div class="notif-list" id="notif-list"></div>
+    </div>
+
+    <!-- FAVORITES -->
     <div id="page-favorites" class="page">
-      <h2>Your Favorites</h2>
+      <div class="page-header">
+        <h1>❤️ My Favorites</h1>
+        <p>Your saved movies & shows.</p>
+      </div>
       <div class="content-grid" id="favorites-grid"></div>
     </div>
 
-    <div id="page-admin" class="page">
-      <h2>Upload Content</h2>
-      <div class="admin-form">
-        <input type="text" id="ad-title" placeholder="Title">
-        <textarea id="ad-desc" placeholder="Description"></textarea>
-        <input type="text" id="ad-genre" placeholder="Genre">
-        <input type="number" id="ad-year" placeholder="Release Year">
-        <select id="ad-type"><option value="movie">Movie</option><option value="show">Show</option></select>
-        <input type="text" id="ad-poster" placeholder="Poster URL (optional)">
-        <input type="file" id="ad-video" accept="video/*">
-        <input type="number" id="ad-episode" placeholder="Episode Number (for shows)" style="display:none">
-        <input type="number" id="ad-season" placeholder="Season Number (for shows)" style="display:none">
-        <p class="auth-error" id="ad-error"></p>
-        <button onclick="uploadContent()">Upload</button>
+    <!-- CONTINUE WATCHING -->
+    <div id="page-continue" class="page">
+      <div class="page-header">
+        <h1>▶ Continue Watching</h1>
+        <p>Pick up right where you left off.</p>
+      </div>
+      <div class="content-grid" id="continue-grid"></div>
+    </div>
+
+    <!-- GENRE/STUDIO RESULTS -->
+    <div id="genre-results">
+      <div id="page-genre" class="page">
+        <div class="page-header">
+          <h1 id="genre-heading">Results</h1>
+          <button id="genre-back-btn" class="btn-back" onclick="closeGenre()">← Back</button>
+        </div>
+        <div class="content-grid" id="genre-grid"></div>
+        <div class="load-more"><button id="genre-more-btn" onclick="loadMoreGenre()" style="display:none">Load More</button></div>
       </div>
     </div>
+
+    <!-- PLAYER -->
+    <div id="page-player" class="page">
+      <button class="back-btn" aria-label="Back to browse">← Back</button>
+
+      <div class="player-info" id="player-info"></div>
+
+      <div class="tv-selector" id="tv-selector">
+        <div class="tv-selector-inner">
+          <button class="ep-nav-btn" id="prev-ep-btn" onclick="prevEpisode()">‹ Prev</button>
+          <select id="season-select" onchange="loadEpisodes()" aria-label="Season"></select>
+          <select id="episode-select" onchange="playTVEpisode()" aria-label="Episode"></select>
+          <button class="ep-nav-btn" id="next-ep-btn" onclick="nextEpisode()">Next ›</button>
+          <button class="play-btn" onclick="playTVEpisode()">▶ Play Episode</button>
+        </div>
+      </div>
+
+      <div class="player-wrapper">
+        <div class="player-chrome" id="player-chrome" style="display:none">
+          <div class="player-chrome-header">
+            <img src="/images/peacock-tiny.png" class="chrome-peacock" alt="Peacocks">
+            <span class="chrome-title">Peacocks Player</span>
+            <span class="chrome-quality" id="chrome-quality">HD</span>
+            <span class="chrome-spacer"></span>
+            <button class="chrome-btn" id="chrome-mute-btn" onclick="toggleMute()" aria-label="Mute" title="Mute (M)">🔊</button>
+            <input type="range" class="chrome-volume" id="chrome-volume" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)" title="Volume">
+            <button class="chrome-btn" onclick="togglePip()" aria-label="Picture in picture" title="Picture in picture (P)">⤢</button>
+            <button class="chrome-btn" onclick="toggleTheater()" aria-label="Theater mode" title="Theater mode (T)">⊟</button>
+            <button class="chrome-btn" onclick="toggleFullscreen()" aria-label="Fullscreen" title="Fullscreen (F)">⛶</button>
+          </div>
+        </div>
+        <div id="stream-loading" class="loading-state" style="display:none">
+          <div class="spinner"></div>
+          <p>Loading from the best Peacocks service...</p>
+        </div>
+        <div id="player-container" class="player-container" style="display:none">
+          <iframe id="player-iframe" src="" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" onload="clearTimeout(window._sourceRetryTimer)"></iframe>
+          <img src="/images/peacock-user.png" class="player-watermark" alt="PeacocksStreams">
+          <div class="next-episode-countdown" id="next-ep-countdown" style="display:none">
+            <p>Next episode in <span id="countdown-seconds">5</span>s</p>
+            <button onclick="playNextEpisode()">▶ Play Now</button>
+            <button onclick="cancelCountdown()">Cancel</button>
+          </div>
+        </div>
+        <div id="no-streams" class="loading-state" style="display:none">
+          <p class="no-streams-title">No streams available</p>
+          <p class="no-streams-sub">Try a different source below, or check back later</p>
+        </div>
+      </div>
+
+      <div class="server-list" id="server-list" style="display:none">
+        <p class="server-label">📡 Peacock Source Quality — auto-picks best</p>
+        <div class="server-buttons" id="server-buttons"></div>
+      </div>
+
+      <!-- Player extras: rate, watchlist, share, similar -->
+      <div class="player-extras" id="player-extras"></div>
+
+      <!-- Comments -->
+      <div class="comments-section" id="comments-section">
+        <h3>💬 Comments</h3>
+        <div class="comment-form">
+          <textarea id="comment-input" placeholder="Share your thoughts..." maxlength="2000"></textarea>
+          <button onclick="postComment()">Post Comment</button>
+        </div>
+        <div class="comments-list" id="comments-list"></div>
+      </div>
+    </div>
+
+    <!-- AUTH PAGE -->
+    <div id="page-login" class="page">
+      <div class="auth-wrapper">
+        <div class="auth-benefits">
+          <h2>Why join the flock?</h2>
+          <p class="auth-tag">It's free. It's gangster. Here's what you get:</p>
+          <ul class="auth-perks">
+            <li>
+              <span class="perk-icon">🎁</span>
+              <div>
+                <strong>5 Peacock Credits</strong> on signup — spend them to unlock beast mode features
+              </div>
+            </li>
+            <li>
+              <span class="perk-icon">✨</span>
+              <div>
+                <strong>Personalized "For You"</strong> — recommendations based on your taste
+              </div>
+            </li>
+            <li>
+              <span class="perk-icon">⚡</span>
+              <div>
+                <strong>Achievement Badges</strong> — collect them all (now 19 to earn!)
+              </div>
+            </li>
+            <li>
+              <span class="perk-icon">📋</span>
+              <div>
+                <strong>Watchlist + Reminders</strong> — never miss a release
+              </div>
+            </li>
+            <li>
+              <span class="perk-icon">🎉</span>
+              <div>
+                <strong>Watch Parties</strong> — sync with friends, chat, react in real time
+              </div>
+            </li>
+            <li>
+              <span class="perk-icon">⭐</span>
+              <div>
+                <strong>Rate &amp; Review</strong> — build your taste profile
+              </div>
+            </li>
+            <li>
+              <span class="perk-icon">🦚</span>
+              <div>
+                <strong>Custom Peacock Skins</strong> — gold, neon, fire, diamond
+              </div>
+            </li>
+            <li>
+              <span class="perk-icon">🚫</span>
+              <div>
+                <strong>Zero Tracking · Zero Ads</strong> — what you watch is your business
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="auth-form">
+          <img src="/images/peacock-pfp.png" class="auth-peacock-pfp" alt="PeacocksStreams">
+          <div class="auth-logo">PeacocksStreams</div>
+          <h2 id="auth-title">Sign In</h2>
+          <input type="email" id="auth-email" placeholder="Email">
+          <input type="password" id="auth-password" placeholder="Password">
+          <input type="text" id="auth-username" placeholder="Username" style="display:none">
+          <p class="auth-error" id="auth-error"></p>
+          <button onclick="handleAuth()" id="auth-btn">Sign In</button>
+          <p class="auth-toggle" id="auth-toggle" onclick="toggleAuth()">Don't have an account? <a href="#">Register</a></p>
+          <p class="auth-pfp-note" id="auth-pfp-note">🦚 New accounts get a gangster peacock PFP + 5 free credits</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="/images/peacock-tiny.png" alt="PeacocksStreams" class="footer-peacock">
+          <span class="footer-name">PeacocksStreams</span>
+        </div>
+        <p class="footer-tag">Unlimited movies & TV. 100% ad-free. Zero bullshit. 🦚</p>
+        <div class="footer-links">
+          <a href="#" onclick="showPage('browse'); return false;">Home</a>
+          <a href="#" onclick="showPage('login'); return false;">Sign In</a>
+          <span class="footer-divider">·</span>
+          <span class="footer-meta">© 2026 PeacocksStreams · No tracking. No ads. No mercy.</span>
+        </div>
+      </div>
+    </footer>
   </main>
 
-<script src="https://cdn.jsdelivr.net/npm/video.js@8/dist/video.min.js"></script>
-<script src="/js/app.js"></script>
+  <!-- Search Filters Modal -->
+  <div class="filters-modal" id="filters-modal" style="display:none" role="dialog" aria-label="Search filters">
+    <div class="filters-content">
+      <button class="filters-close" onclick="closeSearchFilters()" aria-label="Close">×</button>
+      <h2>⚙ Search Filters</h2>
+      <div class="filter-group">
+        <label>Type</label>
+        <select id="filter-type">
+          <option value="movie">Movies</option>
+          <option value="tv">TV Shows</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Year</label>
+        <select id="filter-year">
+          <option value="">Any</option>
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2020">2020-2022</option>
+          <option value="2010">2010-2019</option>
+          <option value="2000">2000-2009</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Genre</label>
+        <select id="filter-genre">
+          <option value="">Any</option>
+          <option value="28">Action</option>
+          <option value="35">Comedy</option>
+          <option value="18">Drama</option>
+          <option value="27">Horror</option>
+          <option value="878">Sci-Fi</option>
+          <option value="10749">Romance</option>
+          <option value="53">Thriller</option>
+          <option value="16">Animation</option>
+          <option value="14">Fantasy</option>
+          <option value="9648">Mystery</option>
+          <option value="80">Crime</option>
+          <option value="99">Documentary</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Sort by</label>
+        <select id="filter-sort">
+          <option value="popularity.desc">Most Popular</option>
+          <option value="vote_average.desc">Highest Rated</option>
+          <option value="primary_release_date.desc">Newest</option>
+          <option value="revenue.desc">Top Grossing</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Minimum votes</label>
+        <select id="filter-votes">
+          <option value="5">Any</option>
+          <option value="50">50+</option>
+          <option value="100">100+</option>
+          <option value="500">500+</option>
+          <option value="1000">1000+</option>
+        </select>
+      </div>
+      <button class="apply-filters" onclick="applyFilters()">Apply</button>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js?v=2"></script>
 </body>
 </html>

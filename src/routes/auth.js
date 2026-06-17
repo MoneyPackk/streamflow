@@ -1,45 +1,147 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { generateToken } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+const { generateToken, setTokenCookie, clearTokenCookie } = require('../middleware/auth');
+const { ApiError } = require('../middleware/errors');
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 function authRoutes(db) {
   const router = express.Router();
 
-  router.post('/register', (req, res) => {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) return res.status(400).json({ error: 'Missing fields' });
+  router.post('/register', async (req, res, next) => {
     try {
-      const hash = bcrypt.hashSync(password, 10);
-      const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
-      const result = stmt.run(username, email, hash);
+      const { username, email, password } = req.body;
+      if (!username || !email || !password) {
+        throw new ApiError(400, 'Username, email, and password required');
+      }
+      if (username.length < 2 || username.length > 50) {
+        throw new ApiError(400, 'Username must be 2-50 characters');
+      }
+      if (!validateEmail(email)) {
+        throw new ApiError(400, 'Invalid email format');
+      }
+      if (password.length < 6) {
+        throw new ApiError(400, 'Password must be at least 6 characters');
+      }
+
+      const hash = await bcrypt.hash(password, 10);
+      // 5 peacock credits as welcome bonus
+      const result = db.prepare('INSERT INTO users (username, email, password, peacock_credits) VALUES (?, ?, ?, 5)').run(username, email, hash);
+      // Unlock welcome achievement
+      db.prepare('INSERT OR IGNORE INTO achievements (user_id, achievement_key) VALUES (?, ?)').run(result.lastInsertRowid, 'welcome');
+
       const token = generateToken({ id: result.lastInsertRowid, username, is_admin: 0 });
-      res.json({ token, user: { id: result.lastInsertRowid, username, email, is_admin: 0 } });
+      setTokenCookie(res, token);
+
+      const user = db.prepare('SELECT id, username, email, is_admin, bio, favorite_genre, peacock_credits, streak_days, created_at FROM users WHERE id = ?').get(result.lastInsertRowid);
+      res.status(201).json({ user });
     } catch (e) {
-      if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'Username or email taken' });
-      res.status(500).json({ error: e.message });
+      if (e.message && e.message.includes('UNIQUE')) {
+        return next(new ApiError(409, 'Username or email already taken'));
+      }
+      next(e);
     }
   });
 
-  router.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-    const token = generateToken(user);
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email, is_admin: user.is_admin } });
-  });
-
-  router.get('/me', (req, res) => {
-    const header = req.headers.authorization;
-    if (!header || !header.startsWith('Bearer ')) return res.status(401).json({ error: 'No token' });
+  router.post('/login', async (req, res, next) => {
     try {
-      const decoded = require('jsonwebtoken').verify(header.split(' ')[1], require('../middleware/auth').JWT_SECRET);
-      const user = db.prepare('SELECT id, username, email, is_admin FROM users WHERE id = ?').get(decoded.id);
-      if (!user) return res.status(404).json({ error: 'User not found' });
-      res.json(user);
-    } catch { res.status(401).json({ error: 'Invalid token' }); }
+      const { email, password } = req.body;
+      if (!email || !password) {
+        throw new ApiError(400, 'Email and password required');
+      }
+
+      const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+      if (!user) {
+        throw new ApiError(401, 'Invalid email or password');
+      }
+
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) {
+        throw new ApiError(401, 'Invalid email or password');
+      }
+
+      const token = generateToken(user);
+      setTokenCookie(res, token);
+
+      const fullUser = db.prepare('SELECT id, username, email, is_admin, bio, favorite_genre, peacock_credits, streak_days, created_at FROM users WHERE id = ?').get(user.id);
+      res.json({ user: fullUser });
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  router.post('/logout', (req, res) => {
+    clearTokenCookie(res);
+    res.json({ success: true });
+  });
+
+  router.get('/me', (req, res, next) => {
+    try {
+      const token = req.cookies?.token || (req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.split(' ')[1] : null);
+      if (!token) {
+        throw new ApiError(401, 'Not authenticated');
+      }
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = db.prepare('SELECT id, username, email, is_admin, bio, favorite_genre, peacock_credits, streak_days, last_watch_date, created_at FROM users WHERE id = ?').get(decoded.id);
+      if (!user) {
+        throw new ApiError(404, 'User not found');
+      }
+      // Get achievement count
+      const achievementCount = db.prepare('SELECT COUNT(*) as c FROM achievements WHERE user_id = ?').get(user.id).c;
+      const watchCount = db.prepare('SELECT COUNT(*) as c FROM watch_history WHERE user_id = ?').get(user.id).c;
+      const favCount = db.prepare('SELECT COUNT(*) as c FROM favorites WHERE user_id = ?').get(user.id).c;
+      res.json({ ...user, achievement_count: achievementCount, watch_count: watchCount, fav_count: favCount });
+    } catch (e) {
+      if (e instanceof ApiError) return next(e);
+      next(new ApiError(401, 'Invalid or expired token'));
+    }
+  });
+
+  // Update profile
+  router.put('/me', (req, res, next) => {
+    try {
+      const token = req.cookies?.token || (req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.split(' ')[1] : null);
+      if (!token) {
+        throw new ApiError(401, 'Not authenticated');
+      }
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const { bio, favorite_genre } = req.body;
+      if (bio != null) {
+        if (typeof bio !== 'string' || bio.length > 200) throw new ApiError(400, 'Bio too long (max 200)');
+        db.prepare('UPDATE users SET bio = ? WHERE id = ?').run(bio, decoded.id);
+      }
+      if (favorite_genre != null) {
+        if (typeof favorite_genre !== 'string' || favorite_genre.length > 50) throw new ApiError(400, 'Invalid favorite genre');
+        db.prepare('UPDATE users SET favorite_genre = ? WHERE id = ?').run(favorite_genre, decoded.id);
+      }
+      const user = db.prepare('SELECT id, username, email, is_admin, bio, favorite_genre, peacock_credits, streak_days, created_at FROM users WHERE id = ?').get(decoded.id);
+      res.json({ user });
+    } catch (e) {
+      if (e instanceof ApiError) return next(e);
+      next(new ApiError(401, 'Invalid token'));
+    }
+  });
+
+  // Get user achievements
+  router.get('/achievements', (req, res, next) => {
+    try {
+      const token = req.cookies?.token || (req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.split(' ')[1] : null);
+      if (!token) return next(new ApiError(401, 'Not authenticated'));
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const achievements = db.prepare('SELECT achievement_key, unlocked_at FROM achievements WHERE user_id = ? ORDER BY unlocked_at DESC').all(decoded.id);
+      res.json({ achievements });
+    } catch (e) {
+      if (e instanceof ApiError) return next(e);
+      next(new ApiError(401, 'Invalid token'));
+    }
   });
 
   return router;
