@@ -5,7 +5,7 @@ function genCode() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
-function partiesRoutes(db) {
+function partiesRoutes(db, broadcast = () => {}) {
   const router = express.Router();
 
   // Create a watch party
@@ -18,6 +18,7 @@ function partiesRoutes(db) {
         'INSERT INTO parties (host_id, code, tmdb_id, media_type, season_number, episode_number) VALUES (?, ?, ?, ?, ?, ?)'
       ).run(req.user.id, code, tmdb_id, media_type, season_number || null, episode_number || null);
       db.prepare('INSERT INTO party_members (party_id, user_id) VALUES (?, ?)').run(result.lastInsertRowid, req.user.id);
+      broadcast(result.lastInsertRowid, { type: 'party_created', code, party_id: result.lastInsertRowid });
       res.status(201).json({ success: true, code, id: result.lastInsertRowid });
     } catch (e) { next(e); }
   });
@@ -51,6 +52,7 @@ function partiesRoutes(db) {
       const party = db.prepare('SELECT * FROM parties WHERE code = ? OR id = ?').get(code.toUpperCase(), code);
       if (!party) return res.status(404).json({ error: 'Party not found' });
       db.prepare('INSERT OR IGNORE INTO party_members (party_id, user_id) VALUES (?, ?)').run(party.id, req.user.id);
+      broadcast(party.id, { type: 'member_joined', user_id: req.user.id, username: req.user.username });
       res.json({ success: true, party_id: party.id });
     } catch (e) { next(e); }
   });
@@ -80,6 +82,7 @@ function partiesRoutes(db) {
       const { current_time_seconds, is_playing } = req.body;
       db.prepare('UPDATE parties SET current_time_seconds = ?, is_playing = ?, last_active = CURRENT_TIMESTAMP WHERE id = ?')
         .run(current_time_seconds || 0, is_playing ? 1 : 0, party.id);
+      broadcast(party.id, { type: 'state', current_time_seconds: current_time_seconds || 0, is_playing: !!is_playing });
       res.json({ success: true });
     } catch (e) { next(e); }
   });
@@ -120,8 +123,8 @@ function partiesRoutes(db) {
       const party = db.prepare('SELECT id FROM parties WHERE code = ? OR id = ?').get(code.toUpperCase(), code);
       if (!party) return res.status(404).json({ error: 'Party not found' });
       db.prepare('INSERT INTO party_chat (party_id, user_id, body) VALUES (?, ?, ?)').run(party.id, req.user.id, body.trim().substring(0, 500));
-      // Touch last_seen
       db.prepare('UPDATE party_members SET last_seen = CURRENT_TIMESTAMP WHERE party_id = ? AND user_id = ?').run(party.id, req.user.id);
+      broadcast(party.id, { type: 'chat', username: req.user.username, body: body.trim().substring(0, 500) });
       res.status(201).json({ success: true });
     } catch (e) { next(e); }
   });
@@ -154,6 +157,7 @@ function partiesRoutes(db) {
       if (!party) return res.status(404).json({ error: 'Party not found' });
       db.prepare('INSERT INTO party_reactions (party_id, user_id, emoji, timestamp_seconds) VALUES (?, ?, ?, ?)')
         .run(party.id, req.user.id, emoji, timestamp_seconds || 0);
+      broadcast(party.id, { type: 'reaction', username: req.user.username, emoji, timestamp_seconds: timestamp_seconds || 0 });
       res.status(201).json({ success: true });
     } catch (e) { next(e); }
   });

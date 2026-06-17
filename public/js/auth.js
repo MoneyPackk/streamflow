@@ -1,10 +1,12 @@
 import { api, sanitize } from './api.js';
+import { setTheme } from './storage.js';
 
 export let user = null;
 
 export async function loadSession() {
   try {
     user = await api('/auth/me');
+    if (user.theme) setTheme(user.theme);
     return user;
   } catch {
     user = null;
@@ -33,6 +35,7 @@ export async function handleAuth(showToastFn, showPageFn) {
       ? await api('/auth/register', { method: 'POST', body: JSON.stringify({ username, email, password }) })
       : await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     user = data.user;
+    if (user.theme) setTheme(user.theme);
     updateNav(showToastFn);
     showToastFn(isRegister ? `Welcome to the flock, ${user.username}! 🦚` : `Welcome back, ${user.username}!`, 'success');
     showPageFn('browse');
@@ -68,6 +71,7 @@ export function updateNav(showToastFn) {
     const navUsername = document.getElementById('nav-username');
     if (navUsername) navUsername.textContent = user.username;
     updateCreditsBadge(user.peacock_credits || 0);
+    window.updatePartyPanelVisibility?.();
   } else {
     document.getElementById('nav-login').style.display = 'inline';
     document.getElementById('nav-logout').style.display = 'none';
@@ -76,6 +80,7 @@ export function updateNav(showToastFn) {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
+    window.updatePartyPanelVisibility?.();
   }
 }
 

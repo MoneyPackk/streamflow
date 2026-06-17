@@ -1,5 +1,6 @@
 const express = require('express');
 const { resolveVidAraHash, getVidAraUrl } = require('../lib/vidaraResolver');
+const { proxyEmbed } = require('../lib/embedProxy');
 
 const PROVIDERS = {
   movie: [
@@ -31,6 +32,8 @@ const PROVIDERS = {
 
 function embedRoutes() {
   const router = express.Router();
+
+  router.get('/proxy', proxyEmbed);
 
   router.get('/:tmdb_id', async (req, res, next) => {
     try {

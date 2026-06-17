@@ -88,7 +88,33 @@
 main { padding-top: 0; position: relative; z-index: 1; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+.foryou-card-wrap { position: relative; }
+.foryou-reason {
+  display: block; font-size: .62rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: var(--accent-light); margin-bottom: 6px; padding-left: 2px;
+}
+.foryou-header { padding: 36px 48px 8px; max-width: 1000px; margin: 0 auto; }
+.foryou-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; color: #fff; }
+.foryou-header p { color: var(--text-muted); font-size: .85rem; margin-top: 4px; }
+
+.trust-strip {
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(90deg, transparent, var(--primary-surface), transparent);
+}
+.trust-strip-inner {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 12px; padding: 10px 24px; max-width: 900px; margin: 0 auto;
+}
+.trust-item { display: flex; align-items: center; gap: 8px; font-size: .72rem; color: var(--text-muted); }
+.trust-item b { color: var(--text-secondary); font-weight: 700; }
+.trust-divider { width: 1px; height: 16px; background: var(--border-subtle); }
+.trust-pulse {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--success);
+  box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
 @media (max-width: 768px) {
-  .site-footer { padding: 36px 16px 24px; }
-  .site-footer { padding: 36px 16px 24px; }
+  .site-footer { padding: 36px 16px 80px; }
+  .foryou-header { padding: 24px 16px 8px; }
 }

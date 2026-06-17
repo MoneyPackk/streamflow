@@ -23,7 +23,7 @@ export async function loadGenreContent(genreId, type, name) {
   document.getElementById('page-genre').classList.add('active');
   document.getElementById('genre-heading').textContent = name;
   try {
-    const data = await api(`/tmdb/popular?type=${type}&page=1`);
+    const data = await api(`/tmdb/discover?type=${type}&with_genres=${genreId}&page=1`);
     const grid = document.getElementById('genre-grid');
     grid.innerHTML = '';
     const items = filterEnglishTitles(data.items || []);
@@ -42,12 +42,17 @@ export function closeGenre() {
 export async function loadMoreGenre() {
   window._genrePage = (window._genrePage || 1) + 1;
   try {
-    const data = await api(`/tmdb/popular?type=${window._currentGenreType}&page=${window._genrePage}`);
+    const data = await api(`/tmdb/discover?type=${window._currentGenreType}&with_genres=${window._currentGenreId}&page=${window._genrePage}`);
     const grid = document.getElementById('genre-grid');
     filterEnglishTitles(data.items || []).forEach(item => grid.insertAdjacentHTML('beforeend', renderCard(item)));
     if (!data.items?.length) document.getElementById('genre-more-btn').style.display = 'none';
   } catch(e) { console.warn('[PS]', e); }
 }
+
+const STUDIOS = {
+  Netflix: 213, HBO: 3268, Disney: 2, Marvel: 420, A24: 41077,
+  Lionsgate: 1632, Universal: 33, Paramount: 4, Amazon: 10221, Apple: 87045,
+};
 
 export async function loadStudioContent(studio) {
   document.getElementById('home-sections').style.display = 'none';
@@ -55,13 +60,22 @@ export async function loadStudioContent(studio) {
   document.getElementById('page-browse').classList.remove('active');
   document.getElementById('genre-results').style.display = 'block';
   document.getElementById('page-genre').classList.add('active');
-  document.getElementById('genre-heading').textContent = `🎬 ${studio} Titles`;
+  document.getElementById('genre-heading').textContent = studio === 'Anime' ? '🌸 Anime' : studio === 'Documentary' ? '🎓 Documentary' : `${studio}`;
   const grid = document.getElementById('genre-grid');
-  grid.innerHTML = `<p style="color:#6b7280;grid-column:1/-1;text-align:center;padding:40px">Loading ${studio} titles...</p>`;
+  grid.innerHTML = `<p style="color:#6b7280;grid-column:1/-1;text-align:center;padding:40px">Loading...</p>`;
   try {
-    const data = await api(`/tmdb/search?q=${encodeURIComponent(studio)}`);
+    let data;
+    if (studio === 'Anime') {
+      data = await api('/tmdb/discover?type=tv&with_genres=16&page=1');
+    } else if (studio === 'Documentary') {
+      data = await api('/tmdb/discover?type=movie&with_genres=99&page=1');
+    } else if (STUDIOS[studio]) {
+      data = await api(`/tmdb/discover?type=movie&with_companies=${STUDIOS[studio]}&page=1`);
+    } else {
+      data = await api(`/tmdb/search?q=${encodeURIComponent(studio)}`);
+    }
     grid.innerHTML = '';
-    const items = filterEnglishTitles(data.items || []).slice(0, 20);
+    const items = filterEnglishTitles(data.items || []);
     if (items.length === 0) {
       grid.innerHTML = '<p style="color:#6b7280;grid-column:1/-1;text-align:center;padding:40px">No titles found</p>';
       return;
@@ -134,7 +148,7 @@ function setHeroItem(hero) {
   meta.innerHTML = metaHtml;
   document.getElementById('hero-actions').style.display = 'flex';
   document.getElementById('hero-play-btn').onclick = () => window.playContent(hero.tmdb_id, hero.type);
-  document.getElementById('hero-info-btn').onclick = () => window.playContent(hero.tmdb_id, hero.type);
+  document.getElementById('hero-info-btn').onclick = () => window.openDetail(hero.tmdb_id, hero.type);
 }
 
 function startHeroCarousel() {

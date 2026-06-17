@@ -1,43 +1,41 @@
 const express = require('express');
 const { authenticate } = require('../middleware/auth');
 
+const STORE = {
+  themes: [
+    { id: 'dark', name: 'Dark Peacock', cost: 0, description: 'Default dark theme' },
+    { id: 'midnight', name: 'Midnight', cost: 10, description: 'Deeper blacks, neon purples' },
+    { id: 'sunset', name: 'Sunset', cost: 15, description: 'Warm oranges and pinks' },
+    { id: 'forest', name: 'Forest', cost: 12, description: 'Deep greens and earth tones' },
+    { id: 'light', name: 'Light', cost: 20, description: 'Bright and clean daytime mode' },
+  ],
+  pfp_skins: [
+    { id: 'default', name: 'Default', cost: 0, description: 'Gangster peacock' },
+    { id: 'gold', name: 'Gold', cost: 25, description: 'Premium gold-plated peacock' },
+    { id: 'neon', name: 'Neon', cost: 20, description: 'Glow in the dark' },
+    { id: 'fire', name: 'Fire', cost: 30, description: 'Burning peacock' },
+    { id: 'diamond', name: 'Diamond', cost: 50, description: 'Crystal clear' },
+  ],
+  perks: [
+    { id: 'quality_4k', name: '4K Beast Mode', cost: 5, description: 'Unlock 4K for one session' },
+    { id: 'no_watermark', name: 'No Watermark', cost: 3, description: 'Hide the peacock watermark for 24h' },
+    { id: 'ai_summary', name: 'AI Movie Recap', cost: 5, description: 'Get an AI summary of any movie' },
+    { id: 'ad_free_week', name: 'Ad-Free Boost', cost: 8, description: '7 days of even fewer interruptions' },
+  ],
+};
+
 function settingsRoutes(db) {
   const router = express.Router();
 
-  // Get all available skins, themes, perks
-  router.get('/store', (req, res) => {
-    res.json({
-      themes: [
-        { id: 'dark', name: 'Dark Peacock', cost: 0, description: 'Default dark theme' },
-        { id: 'midnight', name: 'Midnight', cost: 10, description: 'Deeper blacks, neon purples' },
-        { id: 'sunset', name: 'Sunset', cost: 15, description: 'Warm oranges and pinks' },
-        { id: 'forest', name: 'Forest', cost: 12, description: 'Deep greens and earth tones' },
-        { id: 'light', name: 'Light', cost: 20, description: 'Bright and clean daytime mode' },
-      ],
-      pfp_skins: [
-        { id: 'default', name: 'Default', cost: 0, description: 'Gangster peacock' },
-        { id: 'gold', name: 'Gold', cost: 25, description: 'Premium gold-plated peacock' },
-        { id: 'neon', name: 'Neon', cost: 20, description: 'Glow in the dark' },
-        { id: 'fire', name: 'Fire', cost: 30, description: 'Burning peacock' },
-        { id: 'diamond', name: 'Diamond', cost: 50, description: 'Crystal clear' },
-      ],
-      perks: [
-        { id: 'quality_4k', name: '4K Beast Mode', cost: 5, description: 'Unlock 4K for one session' },
-        { id: 'no_watermark', name: 'No Watermark', cost: 3, description: 'Hide the peacock watermark for 24h' },
-        { id: 'ai_summary', name: 'AI Movie Recap', cost: 5, description: 'Get an AI summary of any movie' },
-        { id: 'ad_free_week', name: 'Ad-Free Boost', cost: 8, description: '7 days of even fewer interruptions' },
-      ],
-    });
+  router.get('/store', (_req, res) => {
+    res.json(STORE);
   });
 
   // Spend credits on a perk/skin/theme
   router.post('/spend', authenticate, (req, res, next) => {
     try {
       const { type, id } = req.body;
-      // type: 'theme' | 'pfp_skin' | 'perk'
-      const store = router.store;
-      if (!store) return res.status(500).json({ error: 'Store not loaded' });
-      const items = type === 'theme' ? store.themes : type === 'pfp_skin' ? store.pfp_skins : store.perks;
+      const items = type === 'theme' ? STORE.themes : type === 'pfp_skin' ? STORE.pfp_skins : STORE.perks;
       const item = items.find(i => i.id === id);
       if (!item) return res.status(400).json({ error: 'Item not found' });
       const user = db.prepare('SELECT peacock_credits FROM users WHERE id = ?').get(req.user.id);
@@ -50,10 +48,17 @@ function settingsRoutes(db) {
         db.prepare('UPDATE users SET theme = ? WHERE id = ?').run(id, req.user.id);
       } else if (type === 'pfp_skin') {
         db.prepare('UPDATE users SET pfp_skin = ? WHERE id = ?').run(id, req.user.id);
+      } else if (type === 'perk') {
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        if (id === 'no_watermark') {
+          res.cookie('perk_no_watermark', '1', { maxAge: 24 * 60 * 60 * 1000, httpOnly: false, sameSite: 'lax' });
+        } else if (id === 'quality_4k') {
+          res.cookie('perk_quality_4k', '1', { maxAge: 4 * 60 * 60 * 1000, httpOnly: false, sameSite: 'lax' });
+        }
+        void expires;
       }
-      // For perks, just log the spend - effect is session-based
       const newCredits = db.prepare('SELECT peacock_credits FROM users WHERE id = ?').get(req.user.id).peacock_credits;
-      res.json({ success: true, new_credits: newCredits, applied: type === 'theme' || type === 'pfp_skin' });
+      res.json({ success: true, new_credits: newCredits, applied: true, perk: type === 'perk' ? id : undefined });
     } catch (e) { next(e); }
   });
 
@@ -128,29 +133,5 @@ function settingsRoutes(db) {
 
   return router;
 }
-
-// Static store data
-settingsRoutes.store = {
-  themes: [
-    { id: 'dark', name: 'Dark Peacock', cost: 0, description: 'Default dark theme' },
-    { id: 'midnight', name: 'Midnight', cost: 10, description: 'Deeper blacks, neon purples' },
-    { id: 'sunset', name: 'Sunset', cost: 15, description: 'Warm oranges and pinks' },
-    { id: 'forest', name: 'Forest', cost: 12, description: 'Deep greens and earth tones' },
-    { id: 'light', name: 'Light', cost: 20, description: 'Bright and clean daytime mode' },
-  ],
-  pfp_skins: [
-    { id: 'default', name: 'Default', cost: 0, description: 'Gangster peacock' },
-    { id: 'gold', name: 'Gold', cost: 25, description: 'Premium gold-plated peacock' },
-    { id: 'neon', name: 'Neon', cost: 20, description: 'Glow in the dark' },
-    { id: 'fire', name: 'Fire', cost: 30, description: 'Burning peacock' },
-    { id: 'diamond', name: 'Diamond', cost: 50, description: 'Crystal clear' },
-  ],
-  perks: [
-    { id: 'quality_4k', name: '4K Beast Mode', cost: 5, description: 'Unlock 4K for one session' },
-    { id: 'no_watermark', name: 'No Watermark', cost: 3, description: 'Hide the peacock watermark for 24h' },
-    { id: 'ai_summary', name: 'AI Movie Recap', cost: 5, description: 'Get an AI summary of any movie' },
-    { id: 'ad_free_week', name: 'Ad-Free Boost', cost: 8, description: '7 days of even fewer interruptions' },
-  ],
-};
 
 module.exports = settingsRoutes;

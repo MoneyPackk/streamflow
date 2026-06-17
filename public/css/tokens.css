@@ -33,31 +33,31 @@
   --weight-extrabold: 800;
   --weight-black: 900;
 
-  /* Vibrant new palette */
-  --canvas: #030308;
-  --canvas-alt: #08081a;
-  --surface: #0a0a1a;
-  --surface-raised: #0f0f24;
-  --surface-hover: #161636;
+  /* Vibrant palette — Midnight Peacock */
+  --canvas: #020206;
+  --canvas-alt: #060612;
+  --surface: #090918;
+  --surface-raised: #0e0e20;
+  --surface-hover: #14142e;
 
-  --text-primary: #f0f0ff;
-  --text-secondary: #c0c0e0;
-  --text-muted: #8080aa;
-  --text-subtle: #555580;
+  --text-primary: #f2f2fa;
+  --text-secondary: #b8b8d0;
+  --text-muted: #7878a0;
+  --text-subtle: #505070;
 
-  --border-subtle: rgba(139, 92, 246, 0.15);
-  --border-default: rgba(139, 92, 246, 0.3);
-  --border-strong: rgba(139, 92, 246, 0.5);
+  --border-subtle: rgba(20, 184, 166, 0.12);
+  --border-default: rgba(20, 184, 166, 0.28);
+  --border-strong: rgba(20, 184, 166, 0.45);
 
-  --primary: #8b5cf6;
-  --primary-light: #a78bfa;
-  --primary-bright: #c084fc;
-  --primary-glow: rgba(139, 92, 246, 0.35);
-  --primary-surface: rgba(139, 92, 246, 0.12);
+  --primary: #14b8a6;
+  --primary-light: #2dd4bf;
+  --primary-bright: #5eead4;
+  --primary-glow: rgba(20, 184, 166, 0.35);
+  --primary-surface: rgba(20, 184, 166, 0.1);
 
-  --accent: #06b6d4;
-  --accent-light: #22d3ee;
-  --accent-glow: rgba(6, 182, 212, 0.3);
+  --accent: #8b5cf6;
+  --accent-light: #a78bfa;
+  --accent-glow: rgba(139, 92, 246, 0.3);
 
   --warm: #f59e0b;
   --warm-light: #fbbf24;

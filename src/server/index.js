@@ -1,4 +1,5 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -8,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const { initDB } = require('../db/init');
 const { errorHandler } = require('../middleware/errors');
+const { initWebSocket } = require('../lib/websocket');
 const authRoutes = require('../routes/auth');
 const contentRoutes = require('../routes/content');
 const tmdbRoutes = require('../routes/tmdb');
@@ -80,9 +82,13 @@ app.use('/api/tmdb', tmdbRoutes());
 app.use('/api/stream', streamRoutes());
 app.use('/api/embed', embedRoutes());
 app.use('/api/social', socialRoutes(db));
-app.use('/api/parties', partiesRoutes(db));
 app.use('/api/settings', settingsRoutes(db));
 app.use('/api/search', searchRoutes());
+
+const server = http.createServer(app);
+const { broadcast } = initWebSocket(server);
+
+app.use('/api/parties', partiesRoutes(db, broadcast));
 
 // SPA fallback
 app.use((req, res) => {
@@ -95,7 +101,8 @@ app.use((req, res) => {
 // Centralized error handler (must be last)
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`StreamFlow running on http://localhost:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`PeacocksStreams running on http://localhost:${PORT}`);
   console.log(`TMDB proxy: http://localhost:${PORT}/api/tmdb`);
+  console.log(`WebSocket: ws://localhost:${PORT}/ws`);
 });

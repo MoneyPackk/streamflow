@@ -1,8 +1,11 @@
-import { api, sanitize } from './api.js';
-import { getWatchHistory, saveRecentlyViewed } from './storage.js';
+import { sanitize } from './api.js';
 
 export function renderSkeletons(count) {
   return Array(count).fill('<div class="skeleton skeleton-card"></div>').join('');
+}
+
+function cardClickHandler(tmdbId, type) {
+  return `window.openDetail(${Number(tmdbId)}, '${type}')`;
 }
 
 export function renderCard(item) {
@@ -13,15 +16,37 @@ export function renderCard(item) {
     : '<div class="poster-placeholder">🎬</div>';
   const badge = safeType === 'tv' ? '<span class="badge">TV</span>' : '<span class="badge">Movie</span>';
   const rating = item.vote_average ? `<span class="rating">★ ${item.vote_average.toFixed(1)}</span>` : '';
-  const hd = item.vote_average >= 6 ? '<span class="hd-badge">HD</span>' : '';
-  const isBeast = item.vote_average >= 8.0;
-  const beast = isBeast ? '<span class="beast-badge">⚡ BEAST</span>' : '';
   const year = item.release_year ? `<span class="card-year">${item.release_year}</span>` : '';
-  return `<div class="content-card ${isBeast ? 'beast-mode' : ''}" onclick="window.playContent(${Number(item.tmdb_id)}, '${safeType}')" onkeydown="if(event.key==='Enter')window.playContent(${Number(item.tmdb_id)},'${safeType}')" tabindex="0" role="button" aria-label="${safeTitle}">
-    ${badge}${rating}${hd}${beast}
+  const desc = item.description || item.overview || '';
+  const previewDesc = desc ? sanitize(desc.substring(0, 120)) + (desc.length > 120 ? '…' : '') : '';
+  const progress = item.progress_pct ? `<div class="card-progress"><div class="card-progress-fill" style="width:${item.progress_pct}%"></div></div>` : '';
+
+  return `<div class="content-card" data-tmdb="${Number(item.tmdb_id)}" data-type="${safeType}"
+    onclick="${cardClickHandler(item.tmdb_id, safeType)}"
+    onkeydown="if(event.key==='Enter')${cardClickHandler(item.tmdb_id, safeType)}"
+    tabindex="0" role="button" aria-label="${safeTitle}">
+    ${badge}${rating}${progress}
     <div class="poster">${poster}</div>
+    <div class="card-hover-preview">
+      <p class="preview-title">${safeTitle}</p>
+      ${previewDesc ? `<p class="preview-desc">${previewDesc}</p>` : ''}
+      <div class="preview-actions">
+        <button class="preview-play" onclick="event.stopPropagation();window.playContent(${Number(item.tmdb_id)},'${safeType}')">▶ Play</button>
+        <button class="preview-info" onclick="event.stopPropagation();${cardClickHandler(item.tmdb_id, safeType)}">More Info</button>
+      </div>
+    </div>
     <div class="info"><h3>${safeTitle}</h3><p>${year}</p></div>
   </div>`;
+}
+
+export function renderContinueCard(item) {
+  const enriched = {
+    ...item,
+    progress_pct: item.runtime_seconds > 0
+      ? Math.min(100, Math.round((item.progress_seconds / item.runtime_seconds) * 100))
+      : (item.progress_seconds > 60 ? 35 : 15),
+  };
+  return renderCard(enriched);
 }
 
 export function renderTopTen(items) {
@@ -35,23 +60,21 @@ export function renderTopTen(items) {
       ? `<img class="poster" src="${sanitize(item.poster_url)}" alt="${sanitize(item.title)}" loading="lazy">`
       : '<div class="poster" style="background:linear-gradient(135deg,#1a1a2e,#111);display:flex;align-items:center;justify-content:center;font-size:2.5rem">🎬</div>';
     const rating = item.vote_average ? `★ ${item.vote_average.toFixed(1)}` : '';
-    const is4K = item.vote_average >= 7.5;
-    const isBeast = item.vote_average >= 8.0;
-    const beastBadge = isBeast ? '<div class="beast-corner">⚡ BEAST</div>' : '';
-    return `<div class="top-ten-card ${isBeast ? 'beast' : ''}" onclick="window.playContent(${Number(item.tmdb_id)}, '${item.type}')" onkeydown="if(event.key==='Enter')window.playContent(${Number(item.tmdb_id)},'${item.type}')" tabindex="0" role="button" aria-label="${sanitize(item.title)}">
+    const type = item.type === 'tv' ? 'tv' : 'movie';
+    return `<div class="top-ten-card" onclick="window.openDetail(${Number(item.tmdb_id)},'${type}')" tabindex="0" role="button" aria-label="${sanitize(item.title)}">
       ${poster}
       <div class="rank">${rank}</div>
-      ${is4K ? '<div class="hd-badge-4k">4K</div>' : ''}
-      ${beastBadge}
+      ${item.vote_average >= 7.5 ? '<div class="hd-badge-4k">HD</div>' : ''}
       <div class="info-overlay">
         <h3>${sanitize(item.title || '')}</h3>
         <p>${rating} ${item.release_year || ''}</p>
       </div>
+      <button class="top-ten-play" onclick="event.stopPropagation();window.playContent(${Number(item.tmdb_id)},'${type}')">▶</button>
     </div>`;
   }).join('');
 }
 
-export function renderComment(c, showToastFn) {
+export function renderComment(c) {
   return `
     <div class="comment-item">
       <div class="comment-avatar">${sanitize(c.username[0]?.toUpperCase() || '?')}</div>

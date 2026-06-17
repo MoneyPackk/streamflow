@@ -43,4 +43,15 @@
 
 .btn-secondary { padding: 7px 14px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-size: .78rem; }
 
+.store-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.store-tab { padding: 8px 14px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-size: .78rem; }
+.store-tab.active { background: var(--primary-surface); border-color: var(--border-default); color: #fff; }
+.store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.store-item { padding: 14px; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.06); border-radius: var(--radius-md); }
+.store-item-name { font-weight: 700; color: #fff; margin-bottom: 4px; }
+.store-item-desc { font-size: .72rem; color: var(--text-muted); margin-bottom: 8px; min-height: 2.2em; }
+.store-item-cost { font-size: .8rem; color: var(--warm-light); margin-bottom: 8px; }
+.store-buy-btn { width: 100%; padding: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border: none; border-radius: var(--radius-sm); color: #fff; font-weight: 600; cursor: pointer; font-size: .78rem; }
+.store-balance { margin-bottom: 10px; color: var(--text-secondary); font-size: .85rem; }
+
 @media (max-width: 768px) { .profile-header { flex-direction: column; text-align: center; padding: 20px 16px; } .profile-stats { grid-template-columns: repeat(2, 1fr); } .page-header { padding: 24px 16px 12px; } }

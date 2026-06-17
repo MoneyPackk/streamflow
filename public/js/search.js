@@ -5,14 +5,58 @@ import { saveSearchHistory, getSearchHistory } from './storage.js';
 
 let searchPage = 1;
 let searchTimer = null;
+let suggestTimer = null;
 
 export function debounceSearch() {
+  const q = document.getElementById('search').value.trim();
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(performSearch, 150);
+  clearTimeout(suggestTimer);
+  if (q.length >= 2) {
+    suggestTimer = setTimeout(() => loadSuggestions(q), 120);
+  } else if (!q) {
+    hideSuggestions();
+    showSearchHistory();
+  }
+  searchTimer = setTimeout(performSearch, 400);
+}
+
+async function loadSuggestions(q) {
+  const autocomplete = document.getElementById('search-autocomplete');
+  if (!autocomplete) return;
+  try {
+    const data = await api(`/search/suggest?q=${encodeURIComponent(q)}`);
+    const suggestions = data.suggestions || [];
+    if (!suggestions.length) {
+      autocomplete.style.display = 'none';
+      return;
+    }
+    autocomplete.style.display = 'block';
+    autocomplete.innerHTML = suggestions.map(s => `
+      <button type="button" class="search-suggest-item" data-id="${s.tmdb_id}" data-type="${s.type}">
+        ${s.poster ? `<img src="${sanitize(s.poster)}" alt="">` : ''}
+        <span>${sanitize(s.title)} <small style="opacity:.6">${s.year || ''} · ${s.type}</small></span>
+      </button>
+    `).join('');
+    autocomplete.querySelectorAll('.search-suggest-item').forEach(btn => {
+      btn.onclick = () => {
+        hideSuggestions();
+        document.getElementById('search').value = '';
+        window.openDetail?.(parseInt(btn.dataset.id), btn.dataset.type);
+      };
+    });
+  } catch {
+    autocomplete.style.display = 'none';
+  }
+}
+
+function hideSuggestions() {
+  const el = document.getElementById('search-autocomplete');
+  if (el) el.style.display = 'none';
 }
 
 export function performSearch() {
   const q = document.getElementById('search').value.trim();
+  hideSuggestions();
   if (!q) {
     document.getElementById('search-results').style.display = 'none';
     document.getElementById('home-sections').style.display = 'block';
@@ -71,7 +115,25 @@ function showSearchHistory() {
     return;
   }
   autocomplete.style.display = 'block';
-  autocomplete.innerHTML = history.slice(0, 5).map(q =>
-    `<button class="search-chip" onclick="document.getElementById('search').value='${sanitize(q)}';performSearch();">${sanitize(q)}</button>`
-  ).join('');
+  autocomplete.innerHTML = `<div style="font-size:.65rem;color:var(--text-subtle);padding:4px 8px;text-transform:uppercase">Recent</div>` +
+    history.slice(0, 5).map(q =>
+      `<button type="button" class="search-chip" data-q="${sanitize(q)}">${sanitize(q)}</button>`
+    ).join('');
+  autocomplete.querySelectorAll('.search-chip').forEach(chip => {
+    chip.onclick = () => {
+      document.getElementById('search').value = chip.dataset.q;
+      performSearch();
+    };
+  });
+}
+
+export function initSearch() {
+  const input = document.getElementById('search');
+  if (!input) return;
+  input.addEventListener('focus', () => {
+    if (!input.value.trim()) showSearchHistory();
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrapper')) hideSuggestions();
+  });
 }

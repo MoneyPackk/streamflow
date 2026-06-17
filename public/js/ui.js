@@ -18,7 +18,7 @@ export function showToast(message, type = 'info', duration = 3000) {
 }
 
 export function showPage(name) {
-  const authRequired = ['favorites', 'continue', 'profile'];
+  const authRequired = ['favorites', 'continue', 'profile', 'foryou', 'watchlist', 'notifications'];
   if (authRequired.includes(name) && !user) {
     showToast('Sign in to access this page', 'info');
     name = 'login';
@@ -31,6 +31,10 @@ export function showPage(name) {
   }
   document.getElementById('search-results').style.display = 'none';
   document.getElementById('genre-results').style.display = 'none';
+  document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
+  const tabMap = { browse: 'home', login: 'profile', profile: 'profile', watchlist: 'library', favorites: 'library', continue: 'library', foryou: 'home', notifications: 'profile' };
+  const tab = document.querySelector(`.mobile-tab[data-page="${tabMap[name] || 'home'}"]`);
+  if (tab) tab.classList.add('active');
   if (name === 'browse') window.loadHome?.();
   if (name === 'favorites') window.loadFavorites?.();
   if (name === 'continue') window.loadContinueWatching?.();
@@ -144,6 +148,49 @@ export function updateContinueNav() {
   const nav = document.getElementById('nav-continue');
   const history = getWatchHistory();
   if (nav) nav.style.display = history.length > 0 ? 'inline' : 'none';
+  updateContinueBar();
+}
+
+export function updateContinueBar() {
+  const bar = document.getElementById('continue-bar');
+  if (!bar) return;
+  if (sessionStorage.getItem('ps_hide_continue_bar') === '1') {
+    bar.style.display = 'none';
+    return;
+  }
+  const history = getWatchHistory();
+  if (!history.length) {
+    bar.style.display = 'none';
+    return;
+  }
+  const latest = history[0];
+  bar.style.display = 'block';
+  const thumb = document.getElementById('continue-bar-thumb');
+  if (thumb) {
+    thumb.style.backgroundImage = latest.poster_url ? `url(${latest.poster_url})` : 'none';
+  }
+  const title = document.getElementById('continue-bar-title');
+  if (title) title.textContent = latest.title || 'Continue watching';
+  const meta = document.getElementById('continue-bar-meta');
+  if (meta) {
+    meta.textContent = latest.type === 'tv' && latest.season
+      ? `S${latest.season} E${latest.episode || 1}`
+      : (latest.type === 'tv' ? 'TV Show' : 'Movie');
+  }
+  const btn = document.getElementById('continue-bar-btn');
+  if (btn) {
+    btn.onclick = () => window.playContent?.(latest.tmdbId, latest.type);
+  }
+  const fill = document.getElementById('continue-bar-progress-fill');
+  const pct = latest.progress_pct || (latest.progress_seconds && latest.runtime_seconds
+    ? Math.min(100, Math.round((latest.progress_seconds / latest.runtime_seconds) * 100)) : 25);
+  if (fill) fill.style.width = `${pct}%`;
+}
+
+export function hideContinueBar() {
+  const bar = document.getElementById('continue-bar');
+  if (bar) bar.style.display = 'none';
+  sessionStorage.setItem('ps_hide_continue_bar', '1');
 }
 
 export function handleUrlParams() {
@@ -153,11 +200,11 @@ export function handleUrlParams() {
   const watchPath = window.location.pathname.match(/^\/watch\/(movie|tv)\/(\d+)/);
   if (watchPath) {
     const [, type, id] = watchPath;
-    setTimeout(() => window.playContent?.(parseInt(id), type), 100);
+    setTimeout(() => window.openDetail?.(parseInt(id), type), 100);
   } else if (movieId) {
-    setTimeout(() => window.playContent?.(parseInt(movieId), 'movie'), 100);
+    setTimeout(() => window.openDetail?.(parseInt(movieId), 'movie'), 100);
   } else if (tvId) {
-    setTimeout(() => window.playContent?.(parseInt(tvId), 'tv'), 100);
+    setTimeout(() => window.openDetail?.(parseInt(tvId), 'tv'), 100);
   }
 }
 

@@ -1,5 +1,5 @@
 import { api, sanitize, timeAgo } from './api.js';
-import { renderCard, renderComment } from './templates.js';
+import { renderCard, renderComment, renderContinueCard } from './templates.js';
 import { user } from './auth.js';
 
 export async function toggleFavorite(tmdbId, title, posterUrl, type, releaseYear) {
@@ -45,7 +45,7 @@ export async function loadPlayerExtras(tmdbId, type) {
       </div>
       ${user ? `<button class="player-action-btn ${onWatchlist ? 'active' : ''}" id="watchlist-toggle-btn">${onWatchlist ? '✓ On Watchlist' : '+ Watchlist'}</button>` : ''}
       <button class="player-action-btn" onclick="window.shareTitle(window._currentTmdbId, window._currentItem?.title, window._currentMediaType)">🔗 Share</button>
-      <button class="player-action-btn" onclick="window.showTrailer(window._currentItem?.title)">🎬 Trailer</button>
+      <button class="player-action-btn" onclick="window.showTrailer(window._currentItem?.title, window._currentTmdbId, window._currentMediaType)">🎬 Trailer</button>
     </div>
     ${aggregate?.count ? `<div class="player-aggregate">★ ${aggregate.avg}/10 from ${aggregate.count} rating${aggregate.count === 1 ? '' : 's'}</div>` : ''}
   `;
@@ -54,7 +54,7 @@ export async function loadPlayerExtras(tmdbId, type) {
       if (!user) { window.showToast('Sign in to rate', 'info'); return; }
       const r = parseInt(btn.dataset.rate);
       try {
-        await api(`/social/ratings/${tmdbId}?type=${type}`, { method: 'POST', body: JSON.stringify({ rating: r, media_type: type }) });
+        await api(`/social/ratings/${tmdbId}`, { method: 'POST', body: JSON.stringify({ rating: r, media_type: type }) });
         window.showToast(`Rated ${r}/10 🦚`, 'success');
         loadPlayerExtras(tmdbId, type);
       } catch (e) { window.showToast(e.message, 'error'); }
@@ -117,7 +117,11 @@ export async function postComment() {
   } catch (e) { window.showToast(e.message, 'error'); }
 }
 
-export function showTrailer(title) {
+export function showTrailer(title, tmdbId, type) {
+  if (tmdbId && type) {
+    window.openTrailer?.(tmdbId, type);
+    return;
+  }
   const q = encodeURIComponent((title || 'trailer') + ' trailer');
   window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank');
 }
@@ -180,9 +184,19 @@ export async function loadForYou() {
     }
     if (grid) {
       grid.innerHTML = '';
-      items.forEach(item => grid.insertAdjacentHTML('beforeend', renderCard(item)));
       if (items.length === 0) {
         grid.innerHTML = '<p style="color:#6b7280;grid-column:1/-1;text-align:center;padding:60px">Rate a few movies to get recommendations 🦚</p>';
+      } else {
+        items.forEach(item => {
+          const reason = item.source === 'collaborative' ? 'Fans like you loved this'
+            : item.source === 'content-similar' ? 'Similar to your taste' : 'Top rated pick';
+          grid.insertAdjacentHTML('beforeend', `
+            <div class="foryou-card-wrap">
+              <span class="foryou-reason">${reason}</span>
+              ${renderCard(item)}
+            </div>
+          `);
+        });
       }
     }
   } catch {
@@ -230,17 +244,40 @@ export async function markAllNotifsRead() {
 }
 
 export async function loadContinueWatching() {
-  const history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
   const grid = document.getElementById('continue-grid');
-  if (history.length === 0) {
-    grid.innerHTML = '<p style="color:#6b7280;grid-column:1/-1;text-align:center;padding:60px">No watch history yet</p>';
+  grid.innerHTML = '<p style="color:#6b7280;grid-column:1/-1;text-align:center;padding:40px">Loading...</p>';
+
+  let items = [];
+  if (user) {
+    try {
+      const data = await api('/content/continue/list');
+      items = (data.items || []).map(h => ({
+        tmdb_id: h.tmdb_id,
+        type: h.media_type || 'movie',
+        title: h.title,
+        poster_url: h.poster_url,
+        progress_seconds: h.progress_seconds,
+        runtime_seconds: h.runtime_seconds,
+        progress_pct: h.runtime_seconds > 0
+          ? Math.min(100, Math.round((h.progress_seconds / h.runtime_seconds) * 100))
+          : 30,
+      }));
+    } catch {}
+  }
+
+  if (items.length === 0) {
+    const history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+    for (const h of history.slice(0, 20)) {
+      try {
+        const item = await api(`/tmdb/${h.tmdbId}?type=${h.type}`);
+        items.push({ ...item, progress_pct: 25 });
+      } catch {}
+    }
+  }
+
+  if (items.length === 0) {
+    grid.innerHTML = '<p style="color:#6b7280;grid-column:1/-1;text-align:center;padding:60px">No watch history yet — start streaming!</p>';
     return;
   }
-  grid.innerHTML = '';
-  for (const h of history.slice(0, 20)) {
-    try {
-      const item = await api(`/tmdb/${h.tmdbId}?type=${h.type}`);
-      grid.insertAdjacentHTML('beforeend', renderCard(item));
-    } catch(e) { console.warn('[PS]', e); }
-  }
+  grid.innerHTML = items.map(item => renderContinueCard(item)).join('');
 }

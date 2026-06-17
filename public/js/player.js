@@ -37,6 +37,8 @@ export async function playContent(tmdbId, type, showToastFn, showPageFn) {
   showPageFn = showPageFn || window.showPage;
   currentTmdbId = tmdbId;
   currentMediaType = type;
+  window._currentTmdbId = tmdbId;
+  window._currentMediaType = type;
   stopPlayer();
   saveRecentlyViewed({ tmdb_id: tmdbId, type, timestamp: Date.now() });
 
@@ -46,7 +48,8 @@ export async function playContent(tmdbId, type, showToastFn, showPageFn) {
       user ? api(`/content/${tmdbId}`).catch(() => ({})) : Promise.resolve({}),
     ]);
     if (!item || !item.title) throw new Error('Title not found');
-    currentItem = { tmdb_id: tmdbId, type, title: item.title, poster_url: item.poster_url };
+    currentItem = { tmdb_id: tmdbId, type, title: item.title, poster_url: item.poster_url, release_year: item.release_year };
+    window._currentItem = currentItem;
 
     const safeTitle = sanitize(item.title || '');
     const safeDesc = item.description ? sanitize(item.description.substring(0, 280)) : '';
@@ -248,7 +251,12 @@ function switchServer(idx) {
   if (!source) return;
   document.getElementById('player-container').style.display = 'block';
   document.getElementById('player-chrome').style.display = 'block';
-  document.getElementById('player-iframe').src = source.url;
+  const iframe = document.getElementById('player-iframe');
+  const watermark = document.querySelector('.player-watermark');
+  iframe.src = `/api/embed/proxy?url=${encodeURIComponent(source.url)}`;
+  if (watermark) {
+    watermark.style.display = document.cookie.includes('perk_no_watermark=1') ? 'none' : '';
+  }
   if (currentSources.length > 1) {
     window._sourceRetryTimer = setTimeout(() => {
       const nextIdx = (idx + 1) % currentSources.length;
@@ -261,7 +269,12 @@ function saveToWatchHistory(tmdbId, type, season, episode, title = '') {
   const watchHistory = getWatchHistory();
   const existing = watchHistory.findIndex(h => h.tmdbId === tmdbId && h.type === type);
   if (existing >= 0) watchHistory.splice(existing, 1);
-  watchHistory.unshift({ tmdbId, type, season, episode, title, poster_url: currentItem?.poster_url || null, timestamp: Date.now() });
+  watchHistory.unshift({
+    tmdbId, type, season, episode, title,
+    poster_url: currentItem?.poster_url || null,
+    timestamp: Date.now(),
+    progress_pct: 15,
+  });
   saveWatchHistory(watchHistory);
   window.updateContinueNav?.();
 

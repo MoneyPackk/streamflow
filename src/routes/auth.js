@@ -88,7 +88,7 @@ function authRoutes(db) {
         throw new ApiError(401, 'Not authenticated');
       }
       const decoded = jwt.verify(token, JWT_SECRET);
-      const user = db.prepare('SELECT id, username, email, is_admin, bio, favorite_genre, peacock_credits, streak_days, last_watch_date, created_at FROM users WHERE id = ?').get(decoded.id);
+      const user = db.prepare('SELECT id, username, email, is_admin, bio, favorite_genre, peacock_credits, streak_days, last_watch_date, theme, pfp_skin, created_at FROM users WHERE id = ?').get(decoded.id);
       if (!user) {
         throw new ApiError(404, 'User not found');
       }

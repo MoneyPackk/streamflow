@@ -1,11 +1,13 @@
 import { API, sanitize, api, timeAgo } from './api.js';
 import { loadSession, isAuthenticated, toggleAuth, handleAuth, logout, updateNav, updateCreditsBadge, user } from './auth.js';
 import { loadHome, filterEnglishTitles, loadGenreContent, closeGenre, loadMoreGenre, loadStudioContent, scrollRow, renderRow } from './home.js';
-import { debounceSearch, performSearch, loadMoreSearch, openSearchFilters, closeSearchFilters, applyFilters } from './search.js';
+import { debounceSearch, performSearch, loadMoreSearch, openSearchFilters, closeSearchFilters, applyFilters, initSearch } from './search.js';
+import { openDetail, closeDetail, playFromDetail, openTrailer, closeTrailer, initDetailModal } from './detail.js';
 import { playContent, stopPlayer, playTVEpisode, prevEpisode, nextEpisode, toggleFullscreen, togglePip, toggleTheater, setVolume, toggleMute, getPlayerState } from './player.js';
 import { toggleFavorite, loadPlayerExtras, loadComments, likeComment, replyComment, postComment, showTrailer, shareTitle, loadFavorites, loadWatchlist, loadForYou, loadNotifications, markAllNotifsRead, loadContinueWatching } from './social.js';
 import { loadProfile, saveProfile } from './profile.js';
-import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome } from './ui.js';
+import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, updateContinueBar, hideContinueBar } from './ui.js';
+import { initPartyUI, updatePartyPanelVisibility } from './parties.js';
 import { getWatchHistory, saveWatchHistory, getTheme, setTheme } from './storage.js';
 import { renderCard, renderTopTen, renderSkeletons } from './templates.js';
 
@@ -58,6 +60,13 @@ function exposeAll() {
   window.updateContinueNav = updateContinueNav;
   window.reinitScrollAnimations = reinitScrollAnimations;
   window.getPlayerState = getPlayerState;
+  window.hideContinueBar = hideContinueBar;
+  window.openDetail = openDetail;
+  window.closeDetail = closeDetail;
+  window.playFromDetail = playFromDetail;
+  window.openTrailer = openTrailer;
+  window.closeTrailer = closeTrailer;
+  window.updatePartyPanelVisibility = updatePartyPanelVisibility;
 }
 
 async function init() {
@@ -72,9 +81,14 @@ async function init() {
   // Load session
   await loadSession();
   updateNav(showToast);
+  updatePartyPanelVisibility();
 
   // Load home page
   await loadHome();
+
+  initPartyUI();
+  initDetailModal();
+  initSearch();
 
   // Init keyboard shortcuts
   initKeyboardShortcuts();
@@ -84,6 +98,7 @@ async function init() {
 
   // Update continue nav
   updateContinueNav();
+  updateContinueBar();
 
   // Handle URL params for direct linking
   handleUrlParams();

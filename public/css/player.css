@@ -154,6 +154,26 @@
 .continue-bar-title { font-size: .9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .continue-bar-btn { padding: 8px 16px; background: #fff; color: #000; border: none; border-radius: var(--radius-sm); font-size: .8rem; font-weight: 700; cursor: pointer; }
 
+.party-panel { max-width: 1000px; margin: 20px auto; padding: 16px 48px; border-top: 1px solid var(--border-subtle); }
+.party-panel h3 { font-size: var(--text-lg); margin-bottom: 12px; color: #fff; }
+.party-btn { padding: 8px 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: var(--radius-sm); color: #fff; cursor: pointer; font-size: .8rem; font-weight: 600; }
+.party-btn:hover { background: var(--primary-surface); }
+.party-join-row { display: flex; gap: 8px; margin-top: 10px; }
+.party-join-row input { flex: 1; padding: 8px 12px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius-sm); color: #fff; }
+.party-members { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.party-member { padding: 4px 10px; background: rgba(255,255,255,.05); border-radius: 999px; font-size: .72rem; color: var(--text-secondary); }
+.party-emoji-row { display: flex; gap: 6px; margin-bottom: 10px; }
+.party-emoji-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; }
+.party-chat { max-height: 140px; overflow-y: auto; background: rgba(0,0,0,.25); border-radius: var(--radius-sm); padding: 8px; margin-bottom: 8px; }
+.party-chat-line { font-size: .78rem; color: var(--text-secondary); margin-bottom: 4px; }
+.party-chat-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.party-chat-input-row input { flex: 1; padding: 8px 12px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius-sm); color: #fff; }
+.party-chat-input-row button { padding: 8px 14px; background: var(--primary); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; }
+.party-leave { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.3); }
+.party-reactions { position: relative; min-height: 0; }
+.party-reaction-float { position: absolute; right: 0; bottom: 0; animation: floatUp 2.5s ease forwards; font-size: 1.1rem; pointer-events: none; }
+@keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-60px); } }
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scaleIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

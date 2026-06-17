@@ -63,7 +63,7 @@ function initWebSocket(server) {
     }));
   });
 
-  return wss;
+  return { wss, broadcast };
 }
 
 function broadcast(partyId, event) {

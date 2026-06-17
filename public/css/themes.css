@@ -1,0 +1,93 @@
+/* ─── THEME VARIANTS ─── */
+[data-theme="dark"] {
+  /* Uses :root tokens from tokens.css */
+}
+
+[data-theme="midnight"] {
+  --canvas: #000005;
+  --canvas-alt: #050510;
+  --surface: #080812;
+  --surface-raised: #0c0c1a;
+  --surface-hover: #12122a;
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-bright: #a5b4fc;
+  --primary-glow: rgba(99, 102, 241, 0.4);
+  --primary-surface: rgba(99, 102, 241, 0.14);
+  --accent: #e879f9;
+  --accent-light: #f0abfc;
+  --border-subtle: rgba(99, 102, 241, 0.18);
+  --border-default: rgba(99, 102, 241, 0.35);
+}
+
+[data-theme="sunset"] {
+  --canvas: #0a0508;
+  --canvas-alt: #120810;
+  --surface: #1a0c14;
+  --surface-raised: #220f1a;
+  --primary: #f43f5e;
+  --primary-light: #fb7185;
+  --primary-bright: #fda4af;
+  --primary-glow: rgba(244, 63, 94, 0.35);
+  --primary-surface: rgba(244, 63, 94, 0.12);
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --warm: #fb923c;
+  --warm-light: #fdba74;
+  --border-subtle: rgba(244, 63, 94, 0.15);
+  --border-default: rgba(251, 146, 60, 0.3);
+}
+
+[data-theme="forest"] {
+  --canvas: #030806;
+  --canvas-alt: #061210;
+  --surface: #0a1612;
+  --surface-raised: #0e1f18;
+  --primary: #10b981;
+  --primary-light: #34d399;
+  --primary-bright: #6ee7b7;
+  --primary-glow: rgba(16, 185, 129, 0.35);
+  --primary-surface: rgba(16, 185, 129, 0.12);
+  --accent: #14b8a6;
+  --accent-light: #2dd4bf;
+  --border-subtle: rgba(16, 185, 129, 0.15);
+  --border-default: rgba(20, 184, 166, 0.3);
+}
+
+[data-theme="light"] {
+  --canvas: #f4f4f8;
+  --canvas-alt: #ebebf0;
+  --surface: #ffffff;
+  --surface-raised: #f8f8fc;
+  --surface-hover: #eeeef4;
+  --text-primary: #111118;
+  --text-secondary: #3a3a4a;
+  --text-muted: #6b6b7b;
+  --text-subtle: #9a9aaa;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 0, 0, 0.14);
+  --primary: #7c3aed;
+  --primary-bright: #6d28d9;
+  --accent: #0891b2;
+  --shadow: rgba(0, 0, 0, 0.12);
+  --overlay: rgba(255, 255, 255, 0.85);
+  --skeleton: #e8e8f0;
+}
+
+[data-theme="light"] .top-nav,
+[data-theme="light"] .mobile-tabs {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .nav-links a:hover,
+[data-theme="light"] .section-header h2,
+[data-theme="light"] .hero-content h1,
+[data-theme="light"] .content-card .info h3 {
+  color: #111;
+}
+
+[data-theme="light"] .hero-play-btn {
+  background: #111;
+  color: #fff;
+}

@@ -115,11 +115,58 @@
 }
 
 @media (max-width: 768px) {
-  .top-nav { padding: 0 14px; overflow-x: auto; scrollbar-width: none; height: 52px; }
-  .top-nav::-webkit-scrollbar { display: none; }
+  .top-nav { padding: 0 14px; height: 52px; }
   .nav-inner { height: 52px; }
-  .nav-links { gap: 4px; }
-  .nav-links a { font-size: .72rem; padding: 4px 8px; white-space: nowrap; }
+  .nav-links .nav-desktop-only { display: none !important; }
   .theme-toggle, .shortcuts-btn, .ad-free-badge { display: none; }
   .nav-search { padding: 4px 14px 10px; }
+  body { padding-bottom: 64px; }
+}
+
+/* Mobile bottom tab bar */
+.mobile-tabs {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 600;
+  height: 60px; padding: 0 8px env(safe-area-inset-bottom);
+  background: rgba(3, 3, 8, 0.92);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.4);
+}
+.mobile-tabs-inner {
+  display: flex; align-items: stretch; justify-content: space-around;
+  max-width: 480px; margin: 0 auto; height: 100%;
+}
+.mobile-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; background: none; border: none; color: var(--text-muted);
+  font-size: .58rem; font-weight: 600; cursor: pointer; padding: 6px 4px;
+  transition: color var(--dur-quick);
+}
+.mobile-tab-icon { font-size: 1.15rem; line-height: 1; }
+.mobile-tab.active { color: var(--primary-bright); }
+.mobile-tab.active .mobile-tab-icon { filter: drop-shadow(0 0 8px var(--primary-glow)); }
+
+@media (max-width: 768px) {
+  .mobile-tabs { display: block; }
+}
+
+.search-autocomplete {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--surface-raised); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); padding: 6px; z-index: 200;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+.search-suggest-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 10px; background: none; border: none; border-radius: var(--radius-sm);
+  color: var(--text-secondary); cursor: pointer; text-align: left;
+  font-size: .82rem; transition: background var(--dur-quick);
+}
+.search-suggest-item:hover { background: var(--primary-surface); color: #fff; }
+.search-suggest-item img { width: 32px; height: 48px; object-fit: cover; border-radius: 4px; }
+.search-chip {
+  display: inline-block; margin: 4px; padding: 4px 12px;
+  background: var(--primary-surface); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full); color: var(--text-muted); font-size: .75rem; cursor: pointer;
 }

@@ -202,14 +202,14 @@ function tmdbRoutes() {
 
   // Discover - default to English-only for US audience
   router.get('/discover', serve('discover', 10 * 60 * 1000, async (req) => {
-    const { type = 'movie', sort = 'popularity.desc', page = 1, with_genres, year } = req.query;
+    const { type = 'movie', sort = 'popularity.desc', page = 1, with_genres, year, with_companies } = req.query;
     const endpoint = type === 'tv' ? '/discover/tv' : '/discover/movie';
-    const { data } = await tmdbApi.get(endpoint, {
-      params: {
-        sort_by: sort, page, with_genres, primary_release_year: year,
-        with_original_language: 'en',
-      }
-    });
+    const params = {
+      sort_by: sort, page, with_genres, primary_release_year: year,
+      with_original_language: 'en',
+    };
+    if (with_companies) params.with_companies = with_companies;
+    const { data } = await tmdbApi.get(endpoint, { params });
     const items = data.results.map(item => type === 'tv' ? mapShow(item) : mapMovie(item));
     return { items, page: data.page, total_pages: data.total_pages };
   }));
@@ -341,6 +341,30 @@ function tmdbRoutes() {
   });
 
   // Season episodes - 1 hour cache
+  router.get('/:tmdb_id/videos', async (req, res, next) => {
+    try {
+      const { tmdb_id } = req.params;
+      const { type = 'movie' } = req.query;
+      const vKey = `videos:${tmdb_id}:${type}`;
+      const vEntry = cache.get(vKey);
+      if (vEntry && Date.now() - vEntry.ts < 60 * 60 * 1000) {
+        return res.json(vEntry.data);
+      }
+      const endpoint = type === 'tv' ? `/tv/${tmdb_id}/videos` : `/movie/${tmdb_id}/videos`;
+      const { data } = await tmdbApi.get(endpoint);
+      const result = {
+        videos: (data.results || []).map(v => ({
+          key: v.key, site: v.site, type: v.type, name: v.name,
+        })),
+      };
+      cache.set(vKey, { ts: Date.now(), data: result });
+      res.json(result);
+    } catch (err) {
+      if (err.response?.status === 404) return res.json({ videos: [] });
+      next(err);
+    }
+  });
+
   router.get('/:tmdb_id/season/:num', async (req, res, next) => {
     try {
       const { tmdb_id, num } = req.params;
