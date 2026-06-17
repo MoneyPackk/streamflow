@@ -1,20 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+
+  --text-xs: 0.7rem;
+  --text-sm: 0.8rem;
+  --text-base: 0.9rem;
   --text-md: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 2rem;
-  --lh-tight: 1.1;
-  --lh-snug: 1.35;
-  --lh-base: 1.55;
-  --tracking-upper: 0.06em;
+  --text-lg: 1.15rem;
+  --text-xl: 1.3rem;
+  --text-2xl: 1.6rem;
+  --text-3xl: 2.2rem;
+  --text-4xl: 3rem;
+  --text-hero: 4.5rem;
+
+  --lh-tight: 1.05;
+  --lh-snug: 1.25;
+  --lh-base: 1.5;
+  --lh-relaxed: 1.7;
+
+  --tracking-tight: -0.03em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+
+  --weight-light: 300;
   --weight-normal: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
@@ -22,65 +33,69 @@
   --weight-extrabold: 800;
   --weight-black: 900;
 
-  --canvas: #06060a;
-  --surface: #111118;
-  --surface-raised: #1a1a2e;
-  --surface-hover: #22223a;
+  /* Vibrant new palette */
+  --canvas: #030308;
+  --canvas-alt: #08081a;
+  --surface: #0a0a1a;
+  --surface-raised: #0f0f24;
+  --surface-hover: #161636;
 
-  --text-primary: #f3f4f6;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
-  --text-subtle: #6b7280;
+  --text-primary: #f0f0ff;
+  --text-secondary: #c0c0e0;
+  --text-muted: #8080aa;
+  --text-subtle: #555580;
 
-  --border-subtle: rgba(168, 85, 247, 0.12);
-  --border-default: rgba(168, 85, 247, 0.25);
-  --border-strong: rgba(168, 85, 247, 0.4);
+  --border-subtle: rgba(139, 92, 246, 0.15);
+  --border-default: rgba(139, 92, 246, 0.3);
+  --border-strong: rgba(139, 92, 246, 0.5);
 
-  --primary: #a855f7;
-  --primary-hover: #b46aff;
-  --primary-dim: #7c3aed;
-  --primary-glow: rgba(168, 85, 247, 0.3);
-  --primary-surface: rgba(168, 85, 247, 0.1);
+  --primary: #8b5cf6;
+  --primary-light: #a78bfa;
+  --primary-bright: #c084fc;
+  --primary-glow: rgba(139, 92, 246, 0.35);
+  --primary-surface: rgba(139, 92, 246, 0.12);
 
-  --secondary: #6366f1;
-  --secondary-hover: #7577f5;
+  --accent: #06b6d4;
+  --accent-light: #22d3ee;
+  --accent-glow: rgba(6, 182, 212, 0.3);
 
   --warm: #f59e0b;
   --warm-light: #fbbf24;
   --warm-surface: rgba(245, 158, 11, 0.15);
 
-  --success: #22c55e;
-  --success-bg: rgba(34, 197, 94, 0.12);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.12);
   --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.12);
   --error: #ef4444;
   --error-bg: rgba(239, 68, 68, 0.12);
 
-  --focus: #a855f7;
-  --overlay: rgba(0, 0, 0, 0.7);
-  --shadow: rgba(0, 0, 0, 0.5);
-  --skeleton: #1e1e32;
+  --focus: #a78bfa;
+  --overlay: rgba(0, 0, 0, 0.75);
+  --shadow: rgba(0, 0, 0, 0.6);
+  --skeleton: #14142a;
 
-  --dur-instant: 0.05s;
-  --dur-fast: 0.1s;
-  --dur-tactile: 0.15s;
-  --dur-quick: 0.2s;
-  --dur-short: 0.25s;
-  --dur-medium: 0.3s;
-  --dur-slow: 0.4s;
-  --dur-reveal: 0.5s;
-  --dur-entrance: 0.7s;
-  --dur-wait: 0.8s;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --dur-instant: 50ms;
+  --dur-fast: 100ms;
+  --dur-quick: 200ms;
+  --dur-medium: 300ms;
+  --dur-slow: 500ms;
+  --dur-reveal: 600ms;
+  --dur-grand: 800ms;
 
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --press-scale: 0.97;
-  --hover-lift: -4px;
-  --hover-scale: 1.04;
-  --lift-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
-  --stagger-base: 30ms;
+  --press-scale: 0.96;
+  --hover-lift: -6px;
+  --hover-scale: 1.03;
+  --stagger-base: 40ms;
 }
