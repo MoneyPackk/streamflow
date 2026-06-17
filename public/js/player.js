@@ -33,6 +33,8 @@ export function stopPlayer() {
 }
 
 export async function playContent(tmdbId, type, showToastFn, showPageFn) {
+  showToastFn = showToastFn || window.showToast;
+  showPageFn = showPageFn || window.showPage;
   currentTmdbId = tmdbId;
   currentMediaType = type;
   stopPlayer();
