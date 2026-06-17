@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticate, optionalAuth } = require('../middleware/auth');
+const { generateRecommendations, getCached, setCache } = require('../lib/recommendationEngine');
 
 // Ratings, comments, watchlist, notifications, recommendations
 function socialRoutes(db) {
@@ -184,80 +185,21 @@ function socialRoutes(db) {
     } catch (e) { next(e); }
   });
 
-  // ─── RECOMMENDATIONS (For You) ───
+  // ─── RECOMMENDATIONS (For You) — v2: three-tier ML engine ───
   router.get('/recommendations', authenticate, async (req, res, next) => {
     try {
-      // Get user's favorite genres from ratings and watch history
-      const ratings = db.prepare('SELECT tmdb_id, media_type, rating FROM ratings WHERE user_id = ? ORDER BY rating DESC LIMIT 20').all(req.user.id);
-      const watchHistory = db.prepare(`
-        SELECT tmdb_id, media_type, COUNT(*) as plays
-        FROM watch_history
-        WHERE user_id = ? AND completed = 1
-        GROUP BY tmdb_id
-        ORDER BY watched_at DESC
-        LIMIT 30
-      `).all(req.user.id);
-      const favorites = db.prepare('SELECT tmdb_id, media_type FROM favorites WHERE user_id = ?').all(req.user.id);
+      // Check cache first
+      const cached = getCached(req.user.id);
+      if (cached) return res.json(cached);
 
-      // Score TMDB IDs the user has engaged with
-      const engaged = new Set();
-      const idScores = {};
-      ratings.forEach(r => { engaged.add(r.tmdb_id); idScores[r.tmdb_id] = (idScores[r.tmdb_id] || 0) + r.rating; });
-      watchHistory.forEach(w => { engaged.add(w.tmdb_id); idScores[w.tmdb_id] = (idScores[w.tmdb_id] || 0) + w.plays; });
-      favorites.forEach(f => { engaged.add(f.tmdb_id); idScores[f.tmdb_id] = (idScores[f.tmdb_id] || 0) + 5; });
-
-      // Get top tmdb_ids the user engaged with
-      const topEngaged = Object.entries(idScores)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([id]) => parseInt(id));
-
-      // For each top item, fetch similar (returns cast + similar) and aggregate
-      const recommendations = new Map();
-      for (const id of topEngaged) {
-        try {
-          const r = await fetch(`https://api.themoviedb.org/3/movie/${id}?append_to_response=similar,keywords&api_key=${process.env.TMDB_API_KEY}`);
-          if (!r.ok) continue;
-          const data = await r.json();
-          if (data.keywords?.keywords) {
-            // Match by similar keywords/genres
-          }
-          if (data.similar?.results) {
-            data.similar.results.slice(0, 10).forEach(m => {
-              if (!engaged.has(m.id) && m.original_language === 'en' && m.vote_count >= 10) {
-                recommendations.set(m.id, { tmdb_id: m.id, title: m.title, type: 'movie',
-                  poster_url: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
-                  release_year: m.release_date ? parseInt(m.release_date) : null,
-                  vote_average: m.vote_average, score: (recommendations.get(m.id)?.score || 0) + idScores[id] * (m.vote_average / 10)
-                });
-              }
-            });
-          }
-        } catch {}
-      }
-
-      // Fallback: top rated American movies if no recs
-      let items = Array.from(recommendations.values()).sort((a, b) => b.score - a.score).slice(0, 30);
-      if (items.length < 10) {
-        try {
-          const r = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${process.env.TMDB_API_KEY}&region=US&with_original_language=en&vote_count.gte=50&page=1`);
-          if (r.ok) {
-            const data = await r.json();
-            data.results?.forEach(m => {
-              if (!engaged.has(m.id) && !recommendations.has(m.id)) {
-                items.push({ tmdb_id: m.id, title: m.title, type: 'movie',
-                  poster_url: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
-                  release_year: m.release_date ? parseInt(m.release_date) : null,
-                  vote_average: m.vote_average, score: m.vote_average
-                });
-              }
-            });
-            items = items.slice(0, 30);
-          }
-        } catch {}
-      }
-      res.json({ items });
-    } catch (e) { next(e); }
+      const result = await generateRecommendations(db, req.user.id);
+      setCache(req.user.id, result);
+      res.json(result);
+    } catch (e) {
+      console.error('Recommendation error:', e.message);
+      // Graceful fallback — return empty, frontend shows "rate a few to get started"
+      res.json({ items: [], meta: { source: 'error', generation_ms: 0, coverage: 0 } });
+    }
   });
 
   return router;
