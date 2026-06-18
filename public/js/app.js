@@ -6,7 +6,7 @@ import { openDetail, closeDetail, playFromDetail, openTrailer, closeTrailer, ini
 import { playContent, stopPlayer, playTVEpisode, prevEpisode, nextEpisode, playNextEpisode, cancelCountdown, toggleFullscreen, togglePip, toggleTheater, setVolume, toggleMute, getPlayerState } from './player.js';
 import { toggleFavorite, loadPlayerExtras, loadComments, likeComment, replyComment, postComment, showTrailer, shareTitle, loadFavorites, loadWatchlist, loadForYou, loadNotifications, markAllNotifsRead, loadContinueWatching } from './social.js';
 import { loadProfile, saveProfile } from './profile.js';
-import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, dismissWelcome, updateContinueBar, hideContinueBar } from './ui.js';
+import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, dismissWelcome, updateContinueBar, hideContinueBar, initMouseGlow, initParallaxScroll } from './ui.js';
 import { initPartyUI, updatePartyPanelVisibility } from './parties.js';
 import { getWatchHistory, saveWatchHistory, getTheme, setTheme } from './storage.js';
 import { renderCard, renderTopTen, renderSkeletons } from './templates.js';
@@ -17,6 +17,7 @@ function exposeAll() {
   window.playContent = playContent;
   window.showToast = showToast;
   window.filterByType = showSection;
+  window.showSection = showSection;
   window.toggleAuth = toggleAuth;
   window.handleAuth = () => handleAuth(showToast, showPage);
   window.logout = () => logout(showToast, showPage);
@@ -98,6 +99,12 @@ async function init() {
 
   // Init scroll animations
   initScrollAnimations();
+
+  // Init mouse glow effect
+  initMouseGlow();
+
+  // Init parallax scroll effect
+  initParallaxScroll();
 
   // Update continue nav
   updateContinueNav();

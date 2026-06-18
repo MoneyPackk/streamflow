@@ -81,6 +81,11 @@ export function initScrollAnimations() {
           card.style.animationDelay = `${i * .04}s`;
           card.classList.add('animated');
         });
+        // Parallax effect for hero backgrounds
+        const heroBg = entry.target.querySelector('.hero-bg');
+        if (heroBg) {
+          heroBg.style.transform = 'scale(1.05)';
+        }
       }
     });
   }, { threshold: 0.05, rootMargin: '0px 0px -50px 0px' });
@@ -101,6 +106,32 @@ export function reinitScrollAnimations() {
     });
   }, { threshold: 0.05, rootMargin: '0px 0px -50px 0px' });
   document.querySelectorAll('.content-section:not(.visible)').forEach(s => observer.observe(s));
+}
+
+// Mouse glow effect for cards
+export function initMouseGlow() {
+  document.addEventListener('mousemove', (e) => {
+    const cards = document.querySelectorAll('.content-card:hover');
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  });
+}
+
+// Parallax scroll effect for hero backgrounds
+export function initParallaxScroll() {
+  window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const heroBgs = document.querySelectorAll('.hero-bg');
+    heroBgs.forEach(bg => {
+      const speed = 0.3;
+      bg.style.transform = `translateY(${scrolled * speed}px) scale(1.05)`;
+    });
+  });
 }
 
 export function initKeyboardShortcuts() {

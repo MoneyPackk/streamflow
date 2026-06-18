@@ -25,6 +25,7 @@ export function renderCard(item) {
     onclick="${cardClickHandler(item.tmdb_id, safeType)}"
     onkeydown="if(event.key==='Enter')${cardClickHandler(item.tmdb_id, safeType)}"
     tabindex="0" role="button" aria-label="${safeTitle}">
+    <div class="card-glare"></div>
     ${badge}${rating}${progress}
     <div class="poster">${poster}</div>
     <div class="card-hover-preview">
