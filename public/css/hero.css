@@ -46,11 +46,9 @@
 .hero-gradient {
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    ellipse at 30% 80%,
-    rgba(124, 58, 237, 0.15) 0%,
-    transparent 50%
-  );
+  background:
+    radial-gradient(ellipse at 25% 85%, rgba(20, 184, 166, 0.2) 0%, transparent 45%),
+    radial-gradient(ellipse at 75% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
   z-index: 1;
   pointer-events: none;
 }
@@ -124,17 +122,13 @@
 }
 
 .hero-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 4.5rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 7vw, 4.75rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
   margin-bottom: 16px;
-  text-shadow: 0 4px 40px rgba(0, 0, 0, 0.8);
-  background: linear-gradient(180deg, #f5f5f7 0%, rgba(245, 245, 247, 0.8) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 60px rgba(0, 0, 0, 0.9);
 }
 
 .hero-meta {
@@ -189,15 +183,17 @@
   align-items: center;
   gap: 10px;
   padding: 16px 36px;
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--peacock-teal) 0%, var(--peacock-cyan) 45%, var(--peacock-violet) 100%);
+  background-size: 200% 200%;
+  animation: iridescentShift 8s ease infinite;
+  color: var(--canvas);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+  transition: transform var(--dur-medium) var(--ease-spring), box-shadow var(--dur-medium);
+  box-shadow: 0 8px 36px rgba(20, 184, 166, 0.45);
   position: relative;
   overflow: hidden;
 }

@@ -102,7 +102,7 @@ async function main() {
 
   // Add SSH key
   const keyName = 'hetzner_deploy_cursor';
-  let keyId;
+  let keyId;\
   const keysRes = await hetznerFetch(page, '/ssh_keys');
   const existing = keysRes.json?.ssh_keys?.find((k) => k.name === keyName);
   if (existing) {

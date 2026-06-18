@@ -1,12 +1,18 @@
 /* ─── NAVIGATION ─── */
 .top-nav {
   position: fixed; top: 0; width: 100%; z-index: 500;
-  background: rgba(8, 8, 13, 0.85);
-  backdrop-filter: blur(20px) saturate(1.8);
-  -webkit-backdrop-filter: blur(20px) saturate(1.8);
-  border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+  background: rgba(2, 4, 8, 0.72);
+  backdrop-filter: blur(24px) saturate(1.9);
+  -webkit-backdrop-filter: blur(24px) saturate(1.9);
+  border-bottom: 1px solid transparent;
+  background-image: linear-gradient(var(--canvas), var(--canvas)) padding-box,
+    linear-gradient(90deg, var(--peacock-teal), var(--peacock-violet), var(--peacock-gold), var(--peacock-teal)) border-box;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
   padding: 0 48px; height: 64px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-smooth);
   pointer-events: auto;
 }
 
@@ -50,21 +56,10 @@
 }
 
 .logo-text {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
-  background-size: 200% 200%;
-  animation: logoShine 4s ease infinite;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-@keyframes logoShine {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 /* Center search */

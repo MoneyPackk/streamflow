@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@600;700;800&display=swap');
 
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Syne', 'Outfit', sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', monospace;
 
   --text-xs: 0.7rem;
@@ -33,31 +33,38 @@
   --weight-extrabold: 800;
   --weight-black: 900;
 
-  /* Premium palette — Electric Violet */
-  --canvas: #08080d;
-  --canvas-alt: #0c0c14;
-  --surface: #12121c;
-  --surface-raised: #1a1a28;
-  --surface-hover: #222236;
+  /* Iridescent Peacock — signature palette */
+  --canvas: #020408;
+  --canvas-alt: #060a10;
+  --surface: #0c1018;
+  --surface-raised: #121820;
+  --surface-hover: #1a2230;
 
-  --text-primary: #f5f5f7;
-  --text-secondary: #c8c8d4;
-  --text-muted: #8888a0;
-  --text-subtle: #555570;
+  --peacock-teal: #14b8a6;
+  --peacock-cyan: #22d3ee;
+  --peacock-violet: #8b5cf6;
+  --peacock-magenta: #e879f9;
+  --peacock-gold: #fbbf24;
+  --peacock-emerald: #10b981;
 
-  --border-subtle: rgba(124, 58, 237, 0.12);
-  --border-default: rgba(124, 58, 237, 0.28);
-  --border-strong: rgba(124, 58, 237, 0.45);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
 
-  --primary: #7c3aed;
-  --primary-light: #a855f7;
-  --primary-bright: #c084fc;
-  --primary-glow: rgba(124, 58, 237, 0.35);
-  --primary-surface: rgba(124, 58, 237, 0.1);
+  --border-subtle: rgba(20, 184, 166, 0.14);
+  --border-default: rgba(139, 92, 246, 0.32);
+  --border-strong: rgba(34, 211, 238, 0.45);
 
-  --accent: #06b6d4;
-  --accent-light: #22d3ee;
-  --accent-glow: rgba(6, 182, 212, 0.3);
+  --primary: #14b8a6;
+  --primary-light: #2dd4bf;
+  --primary-bright: #5eead4;
+  --primary-glow: rgba(20, 184, 166, 0.4);
+  --primary-surface: rgba(20, 184, 166, 0.12);
+
+  --accent: #8b5cf6;
+  --accent-light: #a78bfa;
+  --accent-glow: rgba(139, 92, 246, 0.35);
 
   --warm: #fbbf24;
   --warm-light: #fcd34d;
@@ -69,10 +76,10 @@
   --error: #ef4444;
   --error-bg: rgba(239, 68, 68, 0.12);
 
-  --focus: #a78bfa;
-  --overlay: rgba(0, 0, 0, 0.75);
-  --shadow: rgba(0, 0, 0, 0.6);
-  --skeleton: #14142a;
+  --focus: #5eead4;
+  --overlay: rgba(2, 4, 8, 0.82);
+  --shadow: rgba(0, 0, 0, 0.65);
+  --skeleton: #0f1419;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -98,4 +105,43 @@
   --hover-lift: -6px;
   --hover-scale: 1.03;
   --stagger-base: 40ms;
+
+  /* Glassmorphism 2.0 */
+  --glass-bg: rgba(10, 10, 30, 0.55);
+  --glass-bg-strong: rgba(15, 15, 40, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.15);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Glow system */
+  --glow-violet: 0 0 40px rgba(139, 92, 246, 0.35), 0 0 80px rgba(139, 92, 246, 0.15);
+  --glow-cyan: 0 0 30px rgba(6, 182, 212, 0.35), 0 0 60px rgba(6, 182, 212, 0.15);
+  --glow-warm: 0 0 30px rgba(251, 191, 36, 0.3), 0 0 60px rgba(251, 191, 36, 0.12);
+  --glow-error: 0 0 20px rgba(239, 68, 68, 0.3);
+  --glow-success: 0 0 20px rgba(16, 185, 129, 0.3);
+
+  /* Elevated shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  --shadow-glow-violet: 0 0 30px rgba(124, 58, 237, 0.2), 0 10px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow-cyan: 0 0 30px rgba(6, 182, 212, 0.2), 0 10px 40px rgba(0, 0, 0, 0.5);
+
+  /* Animation timing */
+  --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-dramatic: cubic-bezier(0.87, 0, 0.13, 1);
+  --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Z-index scale */
+  --z-background: -1;
+  --z-content: 1;
+  --z-elevated: 10;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+  --z-cursor: 500;
 }

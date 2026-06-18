@@ -124,7 +124,9 @@ async function loadHeroCarousel() {
 }
 
 function setHeroItem(hero) {
-  document.getElementById('hero-title').textContent = hero.title;
+  const titleEl = document.getElementById('hero-title');
+  titleEl.textContent = hero.title;
+  titleEl.classList.add('iridescent-text');
   document.getElementById('hero-desc').textContent = (hero.description?.substring(0, 150) + '...') || '';
   const backdrop = document.getElementById('hero-backdrop');
   if (hero.backdrop_url) backdrop.style.backgroundImage = `url(${hero.backdrop_url})`;

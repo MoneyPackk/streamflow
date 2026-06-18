@@ -1,0 +1,144 @@
+/* ─── PEACOCK IRIDESCENCE — ambient FX layer ─── */
+
+.ps-ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ps-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.45;
+  animation: orbFloat 18s ease-in-out infinite alternate;
+}
+
+.ps-orb-1 {
+  width: 55vw;
+  height: 55vw;
+  max-width: 620px;
+  max-height: 620px;
+  top: -15%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.55) 0%, transparent 70%);
+  animation-delay: 0s;
+}
+
+.ps-orb-2 {
+  width: 45vw;
+  height: 45vw;
+  max-width: 520px;
+  max-height: 520px;
+  top: 5%;
+  right: -12%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, transparent 70%);
+  animation-delay: -6s;
+  animation-duration: 22s;
+}
+
+.ps-orb-3 {
+  width: 50vw;
+  height: 50vw;
+  max-width: 560px;
+  max-height: 560px;
+  bottom: -20%;
+  left: 25%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, transparent 70%);
+  animation-delay: -12s;
+  animation-duration: 26s;
+}
+
+.ps-orb-4 {
+  width: 30vw;
+  height: 30vw;
+  max-width: 340px;
+  max-height: 340px;
+  bottom: 15%;
+  right: 8%;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.4) 0%, transparent 70%);
+  animation-delay: -4s;
+  animation-duration: 20s;
+}
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3%, -2%) scale(1.05); }
+  66% { transform: translate(-2%, 3%) scale(0.97); }
+  100% { transform: translate(2%, 1%) scale(1.03); }
+}
+
+.ps-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+.ps-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(ellipse 85% 75% at 50% 45%, transparent 40%, rgba(2, 4, 8, 0.65) 100%);
+}
+
+/* Iridescent shimmer text utility */
+.iridescent-text {
+  background: linear-gradient(
+    115deg,
+    #5eead4 0%,
+    #38bdf8 18%,
+    #a78bfa 38%,
+    #f472b6 55%,
+    #fbbf24 72%,
+    #34d399 88%,
+    #5eead4 100%
+  );
+  background-size: 250% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: iridescentShift 8s linear infinite;
+}
+
+@keyframes iridescentShift {
+  0% { background-position: 0% center; }
+  100% { background-position: 250% center; }
+}
+
+/* Section accent line */
+.section-header h2::after,
+.section-title::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--peacock-teal), var(--peacock-violet), var(--peacock-gold));
+  box-shadow: 0 0 16px var(--primary-glow);
+}
+
+/* Hero cinematic ring */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 90% 60% at 20% 100%, rgba(20, 184, 166, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 30%, rgba(167, 139, 250, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-orb, .iridescent-text {
+    animation: none !important;
+  }
+}

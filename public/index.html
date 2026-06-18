@@ -16,15 +16,18 @@
   <meta name="twitter:title" content="PeacocksStreams — Watch Free Movies & TV Shows">
   <meta name="twitter:description" content="Unlimited movies & TV. 100% ad-free. Zero bullshit. 🦚">
   <meta name="twitter:image" content="https://moneypack.wtf/images/peacock-user.png">
-  <meta name="theme-color" content="#06060a">
+  <meta name="theme-color" content="#020408">
   <link rel="icon" href="/images/peacock-user.png">
   <link rel="apple-touch-icon" href="/images/peacock-pfp.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://image.tmdb.org">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/reset.css">
+  <link rel="stylesheet" href="/css/effects.css">
   <link rel="stylesheet" href="/css/nav.css">
   <link rel="stylesheet" href="/css/hero.css">
   <link rel="stylesheet" href="/css/cards.css">
@@ -36,13 +39,23 @@
   <link rel="stylesheet" href="/css/detail-modal.css">
 </head>
 <body>
+  <div class="ps-ambient" aria-hidden="true">
+    <div class="ps-orb ps-orb-1"></div>
+    <div class="ps-orb ps-orb-2"></div>
+    <div class="ps-orb ps-orb-3"></div>
+    <div class="ps-orb ps-orb-4"></div>
+  </div>
+  <div class="ps-grain" aria-hidden="true"></div>
+  <div class="ps-vignette" aria-hidden="true"></div>
+
   <!-- Welcome Animation -->
   <div class="welcome-overlay" id="welcome-overlay">
     <div class="welcome-content">
       <img src="/images/peacock-user.png" class="welcome-peacock" alt="PeacocksStreams">
-      <h1 class="welcome-title">PeacocksStreams</h1>
+      <h1 class="welcome-title iridescent-text">PeacocksStreams</h1>
       <p class="welcome-subtitle">Welcome to the flock 🦚</p>
       <p class="welcome-tagline">Unlimited movies & TV. 100% ad-free. Zero bullshit.</p>
+      <button type="button" class="welcome-enter-btn" id="welcome-enter-btn">Enter the flock →</button>
       <div class="welcome-loader"></div>
     </div>
   </div>
@@ -61,8 +74,12 @@
         el.style.display = 'none';
         try { localStorage.setItem('ps_welcomed_v1', '1'); } catch (e) {}
       }
+      document.getElementById('welcome-enter-btn')?.addEventListener('click', function (e) {
+        e.stopPropagation();
+        hideWelcome();
+      });
       document.getElementById('welcome-overlay')?.addEventListener('click', hideWelcome);
-      setTimeout(hideWelcome, 4000);
+      setTimeout(hideWelcome, 5000);
     })();
   </script>
 
@@ -101,7 +118,7 @@
     <div class="nav-inner">
       <a href="#" class="logo" onclick="showPage('browse')">
         <img src="/images/peacock-tiny.png" alt="PeacocksStreams" class="peacock-icon">
-        <span class="logo-text">PeacocksStreams</span>
+        <span class="logo-text iridescent-text">PeacocksStreams</span>
       </a>
       <div class="nav-center">
         <div class="nav-search-inline">
@@ -175,7 +192,7 @@
           <div class="hero-badge-row">
             <div class="hero-badge" id="hero-badge">TRENDING NOW</div>
           </div>
-          <h1 id="hero-title" class="hero-title">PeacocksStreams</h1>
+          <h1 id="hero-title" class="hero-title iridescent-text">PeacocksStreams</h1>
           <div class="hero-meta" id="hero-meta"></div>
           <p id="hero-desc" class="hero-desc">Your premium streaming destination. Unlimited movies & TV shows, completely free.</p>
           <div class="hero-actions" id="hero-actions" style="display:none">
@@ -767,7 +784,7 @@
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=7"></script>
+  <script type="module" src="/js/app.js?v=8"></script>
 
   <nav class="mobile-tabs" id="mobile-tabs" aria-label="Mobile navigation">
     <div class="mobile-tabs-inner">
