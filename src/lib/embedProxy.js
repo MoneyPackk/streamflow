@@ -23,6 +23,11 @@ async function fetchAndCleanEmbed(embedUrl) {
       'boopigcdn.com', 'exosrv.com', 'soulnetwork.com',
       'trafficfactor.com', 'clicksor.com', 'popads.net',
       'propellerads.com', 'adsterra.com', 'adcash.com',
+      'doubleclick.net', 'googlesyndication.com', 'googleadservices.com',
+      'adnxs.com', 'pubmatic.com', 'rubiconproject.com', 'openx.net',
+      'casalemedia.com', 'sharethrough.com', 'taboola.com', 'outbrain.com',
+      'popcash.net', 'hilltopads.com', 'clickadu.com', 'exoclick.com',
+      'juicyads.com', 'trafficjunky.com', 'trafficfactory.biz',
     ];
 
     adDomains.forEach(domain => {
@@ -57,6 +62,7 @@ async function proxyEmbed(req, res) {
     'https://ezvidapi.com/', 'https://multiembed.mov/', 'https://vidbinge.dev/',
     'https://embed.su/', 'https://player.smashy.stream/', 'https://autoembed.co/',
     'https://moviesapi.club/', 'https://111movies.com/', 'https://rivestream.org/',
+    'https://vidara.to/', 'https://vidsrc.cc/',
   ];
   
   if (!allowedPrefixes.some(p => decodedUrl.startsWith(p))) {
@@ -73,7 +79,14 @@ async function proxyEmbed(req, res) {
   const cspMeta = '<meta http-equiv="Content-Security-Policy" content="default-src * \'unsafe-inline\' \'unsafe-eval\'; script-src * \'unsafe-inline\' \'unsafe-eval\'; img-src * data: blob:; media-src * blob: data:;">';
   const finalHtml = cleaned.replace('</head>', `${cspMeta}</head>`);
 
-  res.set('Content-Type', 'text/html');
+  // Set security headers
+  res.set({
+    'Content-Type': 'text/html',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'SAMEORIGIN',
+    'Referrer-Policy': 'no-referrer',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  });
   res.send(finalHtml);
 }
 

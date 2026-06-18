@@ -1,0 +1,15 @@
+node:events:487
+      throw er; // Unhandled 'error' event
+      ^
+
+DiscordjsError [InteractionNotReplied]: The reply to this interaction has not been sent or deferred.
+    at ButtonInteraction.editReply (C:\Users\blazi\.zed\projects\streaming-platform\node_modules\discord.js\src\structures\interfaces\InteractionResponses.js:246:48)
+    at Client.<anonymous> (C:\Users\blazi\.zed\projects\streaming-platform\scripts\discord-bridge.cjs:335:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+Emitted 'error' event on Client instance at:
+    at emitUnhandledRejectionOrErr (node:events:392:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:92:21) {
+  code: 'InteractionNotReplied'
+}
+
+Node.js v26.3.0

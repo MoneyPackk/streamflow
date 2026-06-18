@@ -18,7 +18,9 @@ export function getPlayerState() {
 
 export function stopPlayer() {
   clearTimeout(window._sourceRetryTimer);
+  clearTimeout(window._videoCheckTimer);
   clearTimeout(window._nextEpOfferTimer);
+  window._foundWorkingSource = false;
   cancelCountdown();
   const container = document.getElementById('player-container');
   const loading = document.getElementById('stream-loading');
@@ -269,14 +271,17 @@ async function loadEmbedSources(tmdbId, type, season, episode) {
     const serverList = document.getElementById('server-list');
     if (serverBtns && serverList) {
       serverBtns.innerHTML = sources.map((s, i) => {
-        const label = s.name || `Source ${i + 1}`;
-        return `<button class="server-btn${i === bestIdx ? ' active' : ''}" data-idx="${i}" title="${sanitize(label)}">${sanitize(label)}</button>`;
+        return `<button class="server-btn${i === bestIdx ? ' active' : ''}" data-idx="${i}">${sanitize(s.name)}</button>`;
       }).join('');
       serverList.style.display = 'block';
       serverBtns.querySelectorAll('.server-btn').forEach(btn => {
-        btn.onclick = () => { clearTimeout(window._sourceRetryTimer); switchServer(parseInt(btn.dataset.idx)); };
+        btn.onclick = () => { 
+          window._foundWorkingSource = false;
+          switchServer(parseInt(btn.dataset.idx)); 
+        };
       });
     }
+    window._foundWorkingSource = false;
     switchServer(bestIdx);
     saveToWatchHistory(tmdbId, type, season, episode, currentItem?.title || '');
   } catch {
@@ -285,26 +290,78 @@ async function loadEmbedSources(tmdbId, type, season, episode) {
   }
 }
 
+function checkVideoPlaying(iframe) {
+  try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const video = iframeDoc.querySelector('video');
+    if (!video) return false;
+    
+    // Check if video has loaded and is playing or ready to play
+    return video.readyState >= 2 && !video.paused && !video.ended && video.currentTime > 0;
+  } catch (e) {
+    // Cross-origin iframe - can't access, assume it's working
+    return true;
+  }
+}
+
 function switchServer(idx) {
   clearTimeout(window._sourceRetryTimer);
+  clearTimeout(window._videoCheckTimer);
+  
   document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`.server-btn[data-idx="${idx}"]`)?.classList.add('active');
+  
   const source = currentSources[idx];
   if (!source) return;
+  
   document.getElementById('player-container').style.display = 'block';
   document.getElementById('player-chrome').style.display = 'block';
+  
   const iframe = document.getElementById('player-iframe');
-  const watermark = document.querySelector('.player-watermark');
   iframe.src = `/api/embed/proxy?url=${encodeURIComponent(source.url)}`;
-  if (watermark) {
-    watermark.style.display = document.cookie.includes('perk_no_watermark=1') ? 'none' : '';
+  
+  // Show loading indicator
+  const loadingEl = document.getElementById('stream-loading');
+  if (loadingEl) {
+    loadingEl.style.display = 'flex';
+    loadingEl.innerHTML = `<div class="loading-text">Loading from ${sanitize(source.name)}...</div>`;
   }
-  if (currentSources.length > 1) {
+  
+  // Wait for iframe to load, then check if video is playing
+  iframe.onload = () => {
+    if (loadingEl) loadingEl.style.display = 'none';
+    
+    // Check for video after 3 seconds
+    window._videoCheckTimer = setTimeout(() => {
+      const isPlaying = checkVideoPlaying(iframe);
+      
+      if (isPlaying) {
+        // Found a working source!
+        window._foundWorkingSource = true;
+        clearTimeout(window._sourceRetryTimer);
+        clearTimeout(window._videoCheckTimer);
+      } else if (!window._foundWorkingSource && currentSources.length > 1) {
+        // Video not playing, try next source
+        const nextIdx = (idx + 1) % currentSources.length;
+        if (nextIdx !== idx) {
+          switchServer(nextIdx);
+        }
+      }
+    }, 3000);
+  };
+  
+  // Fallback: if iframe doesn't load in 10 seconds, try next source
+  if (currentSources.length > 1 && !window._foundWorkingSource) {
     window._sourceRetryTimer = setTimeout(() => {
-      const nextIdx = (idx + 1) % currentSources.length;
-      if (nextIdx !== idx) switchServer(nextIdx);
-    }, 8000);
+      if (!window._foundWorkingSource) {
+        const nextIdx = (idx + 1) % currentSources.length;
+        if (nextIdx !== idx) {
+          switchServer(nextIdx);
+        }
+      }
+    }, 10000);
   }
+  
   if (currentMediaType === 'tv') {
     window._nextEpOfferTimer = setTimeout(scheduleNextEpisodeOffer, 8 * 60 * 1000);
   }
