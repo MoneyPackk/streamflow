@@ -1,147 +1,118 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@600;700;800&display=swap');
+/* PeacocksStreams — Cinema Editorial design system */
 
 :root {
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Syne', 'Outfit', sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', monospace;
+  /* ── Type ── */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
 
-  --text-xs: 0.7rem;
-  --text-sm: 0.8rem;
-  --text-base: 0.9rem;
-  --text-md: 1rem;
-  --text-lg: 1.15rem;
-  --text-xl: 1.3rem;
-  --text-2xl: 1.6rem;
-  --text-3xl: 2.2rem;
-  --text-4xl: 3rem;
-  --text-hero: 4.5rem;
+  --fs-hero: clamp(2.5rem, 6vw, 4rem);
+  --fs-h1: 2rem;
+  --fs-h2: 1.5rem;
+  --fs-h3: 1.2rem;
+  --fs-body: 0.95rem;
+  --fs-sm: 0.85rem;
+  --fs-xs: 0.78rem;
+  --fs-xxs: 0.7rem;
 
-  --lh-tight: 1.05;
-  --lh-snug: 1.25;
-  --lh-base: 1.5;
-  --lh-relaxed: 1.7;
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-base: 1.55;
+  --lh-loose: 1.7;
 
-  --tracking-tight: -0.03em;
-  --tracking-normal: 0;
-  --tracking-wide: 0.04em;
+  --track-tight: -0.02em;
+  --track-normal: 0;
+  --track-wide: 0.04em;
+  --track-label: 0.08em;
 
-  --weight-light: 300;
-  --weight-normal: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-bold: 700;
-  --weight-extrabold: 800;
-  --weight-black: 900;
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-semibold: 600;
+  --w-bold: 700;
 
-  /* Iridescent Peacock — signature palette */
-  --canvas: #020408;
-  --canvas-alt: #060a10;
-  --surface: #0c1018;
-  --surface-raised: #121820;
-  --surface-hover: #1a2230;
+  /* ── Color: dark cinema whisper ── */
+  /* Neutrals carry the surface; one accent carries action. */
+  --canvas: #0a0a0c;
+  --canvas-2: #0e0e12;
+  --surface: #141418;
+  --surface-2: #1a1a20;
+  --surface-3: #22222a;
 
-  --peacock-teal: #14b8a6;
-  --peacock-cyan: #22d3ee;
-  --peacock-violet: #8b5cf6;
-  --peacock-magenta: #e879f9;
-  --peacock-gold: #fbbf24;
-  --peacock-emerald: #10b981;
+  --text: #f3f3f5;
+  --text-2: #c4c4cc;
+  --text-3: #8b8b95;
+  --text-4: #5a5a64;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-2: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.22);
 
-  --border-subtle: rgba(20, 184, 166, 0.14);
-  --border-default: rgba(139, 92, 246, 0.32);
-  --border-strong: rgba(34, 211, 238, 0.45);
+  /* Peacock emerald — the single action accent. Brand-authentic, not a rainbow. */
+  --accent: #19c79a;
+  --accent-bright: #45e0b6;
+  --accent-dim: #0e8f6c;
+  --accent-surface: rgba(25, 199, 154, 0.12);
+  --accent-border: rgba(25, 199, 154, 0.32);
+  --accent-glow: rgba(25, 199, 154, 0.35);
 
-  --primary: #14b8a6;
-  --primary-light: #2dd4bf;
-  --primary-bright: #5eead4;
-  --primary-glow: rgba(20, 184, 166, 0.4);
-  --primary-surface: rgba(20, 184, 166, 0.12);
+  /* Gold — reserved for ratings and quality only. Semantic, never decorative. */
+  --gold: #e8b54a;
+  --gold-bright: #f0c46a;
 
-  --accent: #8b5cf6;
-  --accent-light: #a78bfa;
-  --accent-glow: rgba(139, 92, 246, 0.35);
+  --success: #34d399;
+  --warning: #f0b429;
+  --error: #f06262;
+  --error-surface: rgba(240, 98, 98, 0.12);
 
-  --warm: #fbbf24;
-  --warm-light: #fcd34d;
-  --warm-surface: rgba(251, 191, 36, 0.15);
+  --overlay: rgba(0, 0, 0, 0.72);
+  --skeleton: #18181d;
 
-  --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.12);
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --error-bg: rgba(239, 68, 68, 0.12);
+  /* ── Spacing (4px base, 1-4-9 rhythm) ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --sp-9: 80px;
 
-  --focus: #5eead4;
-  --overlay: rgba(2, 4, 8, 0.82);
-  --shadow: rgba(0, 0, 0, 0.65);
-  --skeleton: #0f1419;
+  /* ── Radius (tight, product-led; inner < outer) ── */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --r-pill: 999px;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-full: 9999px;
-
-  --dur-instant: 50ms;
-  --dur-fast: 100ms;
-  --dur-quick: 200ms;
-  --dur-medium: 300ms;
-  --dur-slow: 500ms;
-  --dur-reveal: 600ms;
-  --dur-grand: 800ms;
-
+  /* ── Motion (150ms baseline, no bounce) ── */
+  --dur-1: 100ms;
+  --dur-2: 150ms;
+  --dur-3: 200ms;
+  --dur-4: 250ms;
+  --dur-5: 300ms;
+  --dur-6: 400ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-precise: cubic-bezier(0.4, 0, 0.2, 1);
 
-  --press-scale: 0.96;
-  --hover-lift: -6px;
-  --hover-scale: 1.03;
-  --stagger-base: 40ms;
+  /* ── Depth (dark theme: lightness over shadow) ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 28px 72px rgba(0, 0, 0, 0.72);
 
-  /* Glassmorphism 2.0 */
-  --glass-bg: rgba(10, 10, 30, 0.55);
-  --glass-bg-strong: rgba(15, 15, 40, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.15);
-  --glass-highlight: rgba(255, 255, 255, 0.05);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  /* ── Layout ── */
+  --container: 1600px;
+  --gutter: 64px;
+  --nav-h: 64px;
 
-  /* Glow system */
-  --glow-violet: 0 0 40px rgba(139, 92, 246, 0.35), 0 0 80px rgba(139, 92, 246, 0.15);
-  --glow-cyan: 0 0 30px rgba(6, 182, 212, 0.35), 0 0 60px rgba(6, 182, 212, 0.15);
-  --glow-warm: 0 0 30px rgba(251, 191, 36, 0.3), 0 0 60px rgba(251, 191, 36, 0.12);
-  --glow-error: 0 0 20px rgba(239, 68, 68, 0.3);
-  --glow-success: 0 0 20px rgba(16, 185, 129, 0.3);
-
-  /* Elevated shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-  --shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-  --shadow-glow-violet: 0 0 30px rgba(124, 58, 237, 0.2), 0 10px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow-cyan: 0 0 30px rgba(6, 182, 212, 0.2), 0 10px 40px rgba(0, 0, 0, 0.5);
-
-  /* Animation timing */
-  --transition-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  --transition-dramatic: cubic-bezier(0.87, 0, 0.13, 1);
-  --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-  /* Z-index scale */
-  --z-background: -1;
+  /* ── Z-index ── */
+  --z-bg: 0;
   --z-content: 1;
-  --z-elevated: 10;
-  --z-sticky: 100;
-  --z-overlay: 200;
-  --z-modal: 300;
-  --z-toast: 400;
-  --z-cursor: 500;
+  --z-nav: 100;
+  --z-sticky: 200;
+  --z-overlay: 1000;
+  --z-modal: 2000;
+  --z-toast: 3000;
 }

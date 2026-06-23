@@ -25,6 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/reset.css">
   <link rel="stylesheet" href="/css/effects.css">
@@ -39,20 +40,11 @@
   <link rel="stylesheet" href="/css/detail-modal.css">
 </head>
 <body>
-  <div class="ps-ambient" aria-hidden="true">
-    <div class="ps-orb ps-orb-1"></div>
-    <div class="ps-orb ps-orb-2"></div>
-    <div class="ps-orb ps-orb-3"></div>
-    <div class="ps-orb ps-orb-4"></div>
-  </div>
-  <div class="ps-grain" aria-hidden="true"></div>
-  <div class="ps-vignette" aria-hidden="true"></div>
-
   <!-- Welcome Animation -->
   <div class="welcome-overlay" id="welcome-overlay">
     <div class="welcome-content">
       <img src="/images/peacock-user.png" class="welcome-peacock" alt="PeacocksStreams">
-      <h1 class="welcome-title iridescent-text">PeacocksStreams</h1>
+      <h1 class="welcome-title">PeacocksStreams</h1>
       <p class="welcome-subtitle">Welcome to the flock 🦚</p>
       <p class="welcome-tagline">Unlimited movies & TV. 100% ad-free. Zero bullshit.</p>
       <button type="button" class="welcome-enter-btn" id="welcome-enter-btn">Enter the flock →</button>
@@ -118,7 +110,7 @@
     <div class="nav-inner">
       <a href="#" class="logo" onclick="showPage('browse')">
         <img src="/images/peacock-tiny.png" alt="PeacocksStreams" class="peacock-icon">
-        <span class="logo-text iridescent-text">PeacocksStreams</span>
+        <span class="logo-text">PeacocksStreams</span>
       </a>
       <div class="nav-center">
         <div class="nav-search-inline">
@@ -188,11 +180,12 @@
       <div class="hero-section" id="hero-section">
         <div class="hero-backdrop" id="hero-backdrop"></div>
         <div class="hero-gradient"></div>
+
         <div class="hero-content">
           <div class="hero-badge-row">
             <div class="hero-badge" id="hero-badge">TRENDING NOW</div>
           </div>
-          <h1 id="hero-title" class="hero-title iridescent-text">PeacocksStreams</h1>
+          <h1 id="hero-title" class="hero-title">PeacocksStreams</h1>
           <div class="hero-meta" id="hero-meta"></div>
           <p id="hero-desc" class="hero-desc">Your premium streaming destination. Unlimited movies & TV shows, completely free.</p>
           <div class="hero-actions" id="hero-actions" style="display:none">
@@ -217,14 +210,14 @@
       <div id="home-sections">
         <div class="content-section top-ten-section">
           <div class="section-header">
-            <h2>🔥 Top 10 Movies Today</h2>
+            <h2>Top 10 Movies Today</h2>
             <p class="section-subtitle">The hottest movies everyone's watching right now</p>
           </div>
           <div class="top-ten-grid" id="top-ten-grid"></div>
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>🎬 Now in <span id="now-playing-region">US</span> Theaters</h2></div>
+          <div class="section-header"><h2>Now in <span id="now-playing-region">US</span> Theaters</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('nowplaying-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="nowplaying-row"></div>
@@ -233,7 +226,7 @@
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>🆕 New <span id="new-region">US</span> Releases</h2></div>
+          <div class="section-header"><h2>New <span id="new-region">US</span> Releases</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('newus-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="newus-row"></div>
@@ -242,7 +235,7 @@
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>📈 Trending Movies</h2></div>
+          <div class="section-header"><h2>Trending Movies</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('trending-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="trending-row"></div>
@@ -251,7 +244,7 @@
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>⭐ Top Rated Movies</h2></div>
+          <div class="section-header"><h2>Top Rated Movies</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('topmovies-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="topmovies-row"></div>
@@ -260,7 +253,7 @@
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>🎟️ Coming Soon to <span id="upcoming-region">US</span> Theaters</h2></div>
+          <div class="section-header"><h2>Coming Soon to <span id="upcoming-region">US</span> Theaters</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('upcoming-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="upcoming-row"></div>
@@ -269,7 +262,7 @@
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>📺 On The Air — TV</h2></div>
+          <div class="section-header"><h2>On The Air: TV</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('ontv-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="ontv-row"></div>
@@ -278,7 +271,7 @@
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>🏆 Top Rated TV Shows</h2></div>
+          <div class="section-header"><h2>Top Rated TV Shows</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('toptv-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="toptv-row"></div>
@@ -287,7 +280,7 @@
         </div>
 
         <div class="content-section" id="zeus-section" style="display:none">
-          <div class="section-header"><h2>⚡ Zeus Network</h2></div>
+          <div class="section-header"><h2>Zeus Network</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('zeus-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="zeus-row"></div>
@@ -296,7 +289,7 @@
         </div>
 
         <div class="content-section" id="continue-section" style="display:none">
-          <div class="section-header"><h2>▶ Continue Watching</h2></div>
+          <div class="section-header"><h2>Continue Watching</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('continue-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="continue-row"></div>
@@ -305,7 +298,7 @@
         </div>
 
         <div class="content-section" id="recommended-section" style="display:none">
-          <div class="section-header"><h2>✨ Recommended for You</h2></div>
+          <div class="section-header"><h2>Recommended for You</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('recommended-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="recommended-row"></div>
@@ -314,7 +307,7 @@
         </div>
 
         <div class="content-section" id="recently-section" style="display:none">
-          <div class="section-header"><h2>👀 Recently Viewed</h2></div>
+          <div class="section-header"><h2>Recently Viewed</h2></div>
           <div class="row-wrapper">
             <button class="row-arrow row-arrow-left" onclick="scrollRow('recently-row', -1)" aria-label="Scroll left">‹</button>
             <div class="content-row" id="recently-row"></div>
@@ -323,7 +316,7 @@
         </div>
 
         <div class="content-section">
-          <div class="section-header"><h2>🎬 Browse by Studio</h2></div>
+          <div class="section-header"><h2>Browse by Studio</h2></div>
           <div class="studio-grid">
             <button class="studio-btn" onclick="loadStudioContent('Netflix')">Netflix</button>
             <button class="studio-btn" onclick="loadStudioContent('HBO')">HBO</button>
@@ -345,7 +338,7 @@
     <!-- FOR YOU PAGE -->
     <div id="page-foryou" class="page">
       <div class="foryou-header">
-        <h1>✨ For You</h1>
+        <h1>For You</h1>
         <p>Personalized picks based on your ratings, favorites, and watch history.</p>
       </div>
       <div class="content-section">
@@ -414,17 +407,17 @@
       </div>
 
       <div class="profile-section">
-        <h2>⚡ Achievements</h2>
+        <h2>Achievements</h2>
         <div class="achievements-grid" id="achievements-grid"></div>
       </div>
 
       <div class="profile-section">
-        <h2>📊 Activity</h2>
+        <h2>Activity</h2>
         <div class="activity-feed" id="activity-feed"></div>
       </div>
 
       <div class="profile-section">
-        <h2>🦚 Peacock Store</h2>
+        <h2>Peacock Store</h2>
         <p class="store-balance">Balance: <strong id="store-balance">0</strong> 🦚</p>
         <div class="store-tabs">
           <button class="store-tab active" data-tab="themes">Themes</button>
@@ -557,14 +550,13 @@
         </div>
       </div>
 
-      <div class="server-list" id="server-list" style="display:none">
-        <p class="server-label">📡 Peacock Source Quality — auto-picks best</p>
-        <div class="server-buttons" id="server-buttons"></div>
+      <div class="source-retry" id="source-retry" style="display:none">
+        <button class="source-retry-btn" onclick="tryNextSource()">Video not playing? Try another source</button>
       </div>
 
       <!-- Watch Party -->
       <div class="party-panel" id="party-panel" style="display:none">
-        <h3>🎉 Watch Party</h3>
+        <h3>Watch Party</h3>
         <div id="party-idle">
           <button class="party-btn" id="party-create-btn">Create Party</button>
           <div class="party-join-row">
@@ -597,7 +589,7 @@
 
       <!-- Comments -->
       <div class="comments-section" id="comments-section">
-        <h3>💬 Comments</h3>
+        <h3>Comments</h3>
         <div class="comment-form">
           <textarea id="comment-input" placeholder="Share your thoughts..." maxlength="2000"></textarea>
           <button onclick="postComment()">Post Comment</button>
@@ -685,7 +677,7 @@
           <img src="/images/peacock-tiny.png" alt="PeacocksStreams" class="footer-peacock">
           <span class="footer-name">PeacocksStreams</span>
         </div>
-        <p class="footer-tag">Unlimited movies & TV. 100% ad-free. Zero bullshit. 🦚</p>
+        <p class="footer-tag">Unlimited movies & TV. 100% ad-free. Zero bullshit.</p>
         <div class="footer-links">
           <a href="#" onclick="showPage('browse'); return false;">Home</a>
           <a href="#" onclick="showPage('login'); return false;">Sign In</a>
@@ -784,7 +776,7 @@
     </div>
   </div>
 
-  <script type="module" src="/js/app.js?v=8"></script>
+  <script type="module" src="/js/app.js?v=9"></script>
 
   <nav class="mobile-tabs" id="mobile-tabs" aria-label="Mobile navigation">
     <div class="mobile-tabs-inner">

@@ -26,22 +26,15 @@ export function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const pageEl = document.getElementById(`page-${name}`);
   if (pageEl) pageEl.classList.add('active');
-  if (document.getElementById('page-player')?.classList.contains('active')) {
-    stopPlayer();
-  }
-  document.getElementById('search-results').style.display = 'none';
-  document.getElementById('genre-results').style.display = 'none';
+  if (document.getElementById('page-player')?.classList.contains('active')) stopPlayer();
+  const sr = document.getElementById('search-results');
+  if (sr) sr.style.display = 'none';
+  const gr = document.getElementById('genre-results');
+  if (gr) gr.style.display = 'none';
   document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
   const tabMap = { browse: 'home', login: 'profile', profile: 'profile', watchlist: 'library', favorites: 'library', continue: 'library', foryou: 'home', notifications: 'profile' };
   const tab = document.querySelector(`.mobile-tab[data-page="${tabMap[name] || 'home'}"]`);
   if (tab) tab.classList.add('active');
-  if (name === 'browse') window.loadHome?.();
-  if (name === 'favorites') window.loadFavorites?.();
-  if (name === 'continue') window.loadContinueWatching?.();
-  if (name === 'profile') window.loadProfile?.();
-  if (name === 'foryou') window.loadForYou?.();
-  if (name === 'watchlist') window.loadWatchlist?.();
-  if (name === 'notifications') window.loadNotifications?.();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -61,7 +54,8 @@ export function cycleTheme() {
   const next = order[(order.indexOf(current) + 1) % order.length];
   html.setAttribute('data-theme', next);
   setTheme(next);
-  document.getElementById('theme-toggle').textContent = next === 'dark' ? '🌙' : next === 'light' ? '☀️' : '🎨';
+  const tt = document.getElementById('theme-toggle');
+  if (tt) tt.textContent = next === 'dark' ? '🌙' : next === 'light' ? '☀️' : '🎨';
   showToast(`Theme: ${next}`, 'info', 1500);
 }
 
@@ -81,11 +75,8 @@ export function initScrollAnimations() {
           card.style.animationDelay = `${i * .04}s`;
           card.classList.add('animated');
         });
-        // Parallax effect for hero backgrounds
         const heroBg = entry.target.querySelector('.hero-bg');
-        if (heroBg) {
-          heroBg.style.transform = 'scale(1.05)';
-        }
+        if (heroBg) heroBg.style.transform = 'scale(1.05)';
       }
     });
   }, { threshold: 0.05, rootMargin: '0px 0px -50px 0px' });
@@ -106,32 +97,6 @@ export function reinitScrollAnimations() {
     });
   }, { threshold: 0.05, rootMargin: '0px 0px -50px 0px' });
   document.querySelectorAll('.content-section:not(.visible)').forEach(s => observer.observe(s));
-}
-
-// Mouse glow effect for cards
-export function initMouseGlow() {
-  document.addEventListener('mousemove', (e) => {
-    const cards = document.querySelectorAll('.content-card:hover');
-    cards.forEach(card => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
-    });
-  });
-}
-
-// Parallax scroll effect for hero backgrounds
-export function initParallaxScroll() {
-  window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const heroBgs = document.querySelectorAll('.hero-bg');
-    heroBgs.forEach(bg => {
-      const speed = 0.3;
-      bg.style.transform = `translateY(${scrolled * speed}px) scale(1.05)`;
-    });
-  });
 }
 
 export function initKeyboardShortcuts() {
@@ -266,3 +231,5 @@ export function showWelcome() {
   }, 1800);
   setTimeout(dismissWelcome, 4000);
 }
+
+// Particle system and ambient cursor removed in cinema-editorial redesign.

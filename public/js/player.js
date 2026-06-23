@@ -13,8 +13,8 @@ let currentItem = null;
 let _muted = false;
 let _volume = 1;
 
-const SOURCE_LOAD_TIMEOUT = 8000;   // ms to wait per source before bailing
-const SOURCE_FINAL_TIMEOUT = 30000; // ms total before giving up entirely
+const SOURCE_LOAD_TIMEOUT = 12000;  // ms per source before advancing
+const SOURCE_FINAL_TIMEOUT = 90000; // ms total before giving up
 
 export function getPlayerState() {
   return { currentTmdbId, currentMediaType, currentSeason, currentEpisode, currentItem };
@@ -24,23 +24,18 @@ export function stopPlayer() {
   clearTimeout(window._sourceLoadTimer);
   clearTimeout(window._sourceFinalTimer);
   clearTimeout(window._nextEpOfferTimer);
-  if (window._embedMessageHandler) {
-    window.removeEventListener('message', window._embedMessageHandler);
-    window._embedMessageHandler = null;
-  }
-  window._userSelectedSource = false;
   cancelCountdown();
   const container = document.getElementById('player-container');
   const loading = document.getElementById('stream-loading');
   const noStreams = document.getElementById('no-streams');
-  const serverList = document.getElementById('server-list');
   const tvSelector = document.getElementById('tv-selector');
   const iframe = document.getElementById('player-iframe');
   if (container) container.style.display = 'none';
   if (loading) loading.style.display = 'none';
   if (noStreams) noStreams.style.display = 'none';
-  if (serverList) serverList.style.display = 'none';
   if (tvSelector) tvSelector.style.display = 'none';
+  const retry = document.getElementById('source-retry');
+  if (retry) retry.style.display = 'none';
   if (iframe) iframe.src = 'about:blank';
   currentSources = [];
   currentSourceIdx = 0;
@@ -79,7 +74,7 @@ export async function playContent(tmdbId, type, showToastFn, showPageFn) {
     if (item.cast?.length > 0) {
       html += `<div class="player-section"><h3 class="player-section-title">Cast</h3><div class="cast-grid">`;
       item.cast.forEach(c => {
-        const photo = c.photo ? `<img src="${sanitize(c.photo)}" alt="${sanitize(c.name)}" loading="lazy">` : '<div style="width:80px;height:80px;border-radius:50%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-size:1.5rem">👤</div>';
+        const photo = c.photo ? `<img src="${sanitize(c.photo)}" alt="${sanitize(c.name)}" loading="lazy">` : '<div style="width:80px;height:80px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:1.5rem">👤</div>';
         html += `<div class="cast-card">${photo}<p class="cast-name">${sanitize(c.name)}</p><p>${sanitize(c.character || '')}</p></div>`;
       });
       html += `</div></div>`;
@@ -92,9 +87,9 @@ export async function playContent(tmdbId, type, showToastFn, showPageFn) {
     }
 
     html += `<div class="player-section" style="display:flex;gap:10px;flex-wrap:wrap">
-      ${user ? `<button class="fav-btn" data-action="fav-toggle">${info.is_favorite ? '❤️ Remove Favorite' : '♡ Add to Favorites'}</button>` : ''}
-      <button class="fav-btn" data-action="share">🔗 Share</button>
-      <button class="fav-btn" data-action="trailer">🎬 Trailer</button>
+      ${user ? `<button class="fav-btn" data-action="fav-toggle">${info.is_favorite ? 'Remove Favorite' : 'Add to Favorites'}</button>` : ''}
+      <button class="fav-btn" data-action="share">Share</button>
+      <button class="fav-btn" data-action="trailer">Trailer</button>
     </div></div>`;
     document.getElementById('player-info').innerHTML = html;
 
@@ -261,10 +256,6 @@ async function loadEmbedSources(tmdbId, type, season, episode) {
   document.getElementById('player-iframe').src = 'about:blank';
   clearTimeout(window._sourceLoadTimer);
   clearTimeout(window._sourceFinalTimer);
-  if (window._embedMessageHandler) {
-    window.removeEventListener('message', window._embedMessageHandler);
-    window._embedMessageHandler = null;
-  }
 
   try {
     let url = `/embed/${tmdbId}?type=${type}`;
@@ -281,27 +272,9 @@ async function loadEmbedSources(tmdbId, type, season, episode) {
 
     currentSources = sources;
     currentSourceIdx = 0;
-    window._userSelectedSource = false;
 
-    const serverBtns = document.getElementById('server-buttons');
-    const serverList = document.getElementById('server-list');
-    if (serverBtns && serverList) {
-      serverBtns.innerHTML = sources.map((s, i) => {
-        const dot = s.confidence === 'high' ? '🟢' : s.confidence === 'medium' ? '🟡' : s.confidence === 'low' ? '🔴' : '⚪';
-        return `<button class="server-btn${i === 0 ? ' active' : ''}" data-idx="${i}">${dot} ${sanitize(s.name)}</button>`;
-      }).join('');
-      serverList.style.display = 'block';
-      serverBtns.querySelectorAll('.server-btn').forEach(btn => {
-        btn.onclick = () => {
-          window._userSelectedSource = true;
-          currentSourceIdx = parseInt(btn.dataset.idx);
-          tryServer(currentSourceIdx);
-        };
-      });
-    }
-
-    // Try the highest-confidence source first. Server already sorted them.
-    tryServer(0);
+    // No source list shown to the user. Silent auto-cycling only.
+    trySource(0);
     saveToWatchHistory(tmdbId, type, season, episode, currentItem?.title || '');
   } catch (e) {
     console.error('[PS] loadEmbedSources failed:', e);
@@ -310,19 +283,13 @@ async function loadEmbedSources(tmdbId, type, season, episode) {
   }
 }
 
-// Try a specific source index. Sets up load+timeout logic.
-// On failure (no iframe response in SOURCE_LOAD_TIMEOUT), advance to next source.
-// If user manually clicked a server, don't auto-advance — they picked it.
+// Try a specific source. The load_url is our server-side redirect endpoint.
+// On iframe.onload: treat as success (stop cycling, show player).
+// On timeout (12s with no load): advance to next source.
+// On total timeout (90s): give up.
 function tryServer(idx) {
-  // CRITICAL: tear down ALL state from previous attempt before starting a new one.
   clearTimeout(window._sourceLoadTimer);
-  if (window._embedMessageHandler) {
-    window.removeEventListener('message', window._embedMessageHandler);
-    window._embedMessageHandler = null;
-  }
-  // Clear final timer too — only set fresh on the first try.
   clearTimeout(window._sourceFinalTimer);
-  window._sourceFinalTimer = null;
 
   const source = currentSources[idx];
   if (!source) {
@@ -331,8 +298,6 @@ function tryServer(idx) {
   }
 
   currentSourceIdx = idx;
-  document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.server-btn[data-idx="${idx}"]`)?.classList.add('active');
 
   document.getElementById('player-container').style.display = 'block';
   document.getElementById('player-chrome').style.display = 'block';
@@ -341,112 +306,89 @@ function tryServer(idx) {
   const loadingEl = document.getElementById('stream-loading');
   if (loadingEl) {
     loadingEl.style.display = 'flex';
-    loadingEl.innerHTML = `<div class="loading-text">Loading from ${sanitize(source.name)}...</div>`;
+    loadingEl.innerHTML = `<div class="spinner"></div><p class="loading-text">Loading...</p>`;
   }
 
-  // Reset iframe src to about:blank first so onload fires reliably when we set the real src.
-  iframe.src = 'about:blank';
-  iframe.onload = null;
-  iframe.onerror = null;
-
-  // Use rAF to ensure the about:blank load settles before assigning real src.
-  // This guarantees onload fires when the embed actually loads.
-  requestAnimationFrame(() => {
-    iframe.src = `/api/embed/proxy?url=${encodeURIComponent(source.url)}`;
-  });
-
-  // Per-source load timer: if the iframe hasn't fired load or ready in 8s, advance.
   let resolved = false;
+
   const resolveSuccess = () => {
     if (resolved) return;
     resolved = true;
     clearTimeout(window._sourceLoadTimer);
     clearTimeout(window._sourceFinalTimer);
-    window._sourceFinalTimer = null;
     if (loadingEl) loadingEl.style.display = 'none';
+    // Show the subtle retry button in case the video isn't actually playing.
+    const retry = document.getElementById('source-retry');
+    if (retry && currentSources.length > 1) retry.style.display = 'block';
     if (currentMediaType === 'tv') {
       window._nextEpOfferTimer = setTimeout(scheduleNextEpisodeOffer, 8 * 60 * 1000);
     }
-    if (window._embedMessageHandler) {
-      window.removeEventListener('message', window._embedMessageHandler);
-      window._embedMessageHandler = null;
-    }
   };
-  window._resolveSuccess = resolveSuccess;
 
   const advance = () => {
     if (resolved) return;
     resolved = true;
     clearTimeout(window._sourceLoadTimer);
-    if (window._embedMessageHandler) {
-      window.removeEventListener('message', window._embedMessageHandler);
-      window._embedMessageHandler = null;
-    }
-    // Don't auto-advance if user picked this server.
-    if (window._userSelectedSource) return;
     advanceToNextSource();
   };
-  window._advanceFromSource = advance;
 
-  window._sourceLoadTimer = setTimeout(() => {
-    // If user picked this server, give them more time. Otherwise advance.
-    if (window._userSelectedSource) return;
-    advance();
-  }, SOURCE_LOAD_TIMEOUT);
+  // Reset iframe, then load the source via our redirect endpoint.
+  iframe.src = 'about:blank';
+  iframe.onload = null;
+  iframe.onerror = null;
 
-  // Final timer — only set on the first source attempt.
-  // Once any source succeeds, it's cleared.
-  window._sourceFinalTimer = setTimeout(() => {
-    if (resolved) return;
-    if (window._userSelectedSource) return;
-    // We've exhausted our time budget. Stop cycling.
-    showNoStreams();
-  }, SOURCE_FINAL_TIMEOUT);
+  requestAnimationFrame(() => {
+    iframe.src = source.load_url;
+  });
 
-  // Listen for embed-reported errors via postMessage.
-  // CRITICAL: only attach ONE listener, scoped to this attempt. Detach on success/advance.
-  const onMessage = (e) => {
-    if (resolved) return;
-    const data = e.data;
-    if (!data || typeof data !== 'object') return;
-    // Player reported an error.
-    if (data.type === 'embed-error' || data.type === 'ps-error' || data.event === 'error') {
-      advance();
-      return;
-    }
-    // Player reported ready — settle on this source.
-    if (data.type === 'embed-ready' || data.type === 'ps-ready' || data.event === 'ready') {
-      resolveSuccess();
-      return;
-    }
-  };
-  window._embedMessageHandler = onMessage;
-  window.addEventListener('message', onMessage);
-
-  // CRITICAL: do NOT treat iframe.onload as success.
-  // Cross-origin embeds fire onload even when the player is broken.
-  // We wait for either:
-  //   1. postMessage 'embed-ready' (most reliable)
-  //   2. SOURCE_LOAD_TIMEOUT (8s) — advance to next source
-  //   3. SOURCE_FINAL_TIMEOUT (30s) — give up entirely
-  //
-  // We do NOT rely on iframe.onload anymore. The iframe might "load" but show an error inside.
+  // iframe.onload = the embed page loaded. Treat as success.
+  // Cross-origin embeds fire onload even when broken, but advancing away
+  // from working embeds (because postMessage never comes) is worse.
+  // Most embeds that fire onload ARE working.
   iframe.onload = () => {
-    // Just hide the loading spinner — but DO NOT mark as resolved.
-    // The SOURCE_LOAD_TIMER is the real gate.
-    if (loadingEl) loadingEl.style.display = 'none';
+    resolveSuccess();
   };
+
   iframe.onerror = () => {
     advance();
   };
+
+  // Per-source timeout: if no load in 12s, try next source.
+  window._sourceLoadTimer = setTimeout(() => {
+    advance();
+  }, SOURCE_LOAD_TIMEOUT);
+
+  // Final timeout: if we've been cycling for 90s, give up.
+  window._sourceFinalTimer = setTimeout(() => {
+    if (resolved) return;
+    resolved = true;
+    clearTimeout(window._sourceLoadTimer);
+    showNoStreams();
+  }, SOURCE_FINAL_TIMEOUT);
 }
 
 function advanceToNextSource() {
   if (currentSources.length === 0) return showNoStreams();
-  const nextIdx = (currentSourceIdx + 1) % currentSources.length;
-  if (nextIdx === currentSourceIdx) return showNoStreams(); // only one source
-  // CRITICAL: clear resolved state via the flag inside tryServer.
-  // The flag is set per-attempt, so a fresh tryServer(nextIdx) resets it.
+  const nextIdx = currentSourceIdx + 1;
+  if (nextIdx >= currentSources.length) return showNoStreams();
+  tryServer(nextIdx);
+}
+
+// Manual "try another source" — user clicks if video isn't playing.
+// No provider names shown. Just cycles to the next source silently.
+export function tryNextSource() {
+  clearTimeout(window._sourceLoadTimer);
+  clearTimeout(window._sourceFinalTimer);
+  const nextIdx = currentSourceIdx + 1;
+  if (nextIdx >= currentSources.length) {
+    // Wrap around to the beginning.
+    if (currentSources.length > 0) {
+      tryServer(0);
+    } else {
+      showNoStreams();
+    }
+    return;
+  }
   tryServer(nextIdx);
 }
 
@@ -455,6 +397,8 @@ function showNoStreams() {
   clearTimeout(window._sourceFinalTimer);
   document.getElementById('stream-loading').style.display = 'none';
   document.getElementById('no-streams').style.display = 'flex';
+  const retry = document.getElementById('source-retry');
+  if (retry) retry.style.display = 'none';
 }
 
 function saveToWatchHistory(tmdbId, type, season, episode, title = '') {
@@ -482,7 +426,7 @@ function saveToWatchHistory(tmdbId, type, season, episode, title = '') {
     }).then(result => {
       if (result?.unlocked_achievements?.length) {
         for (const ach of result.unlocked_achievements) {
-          window.showToast(`⚡ ${ach.name}! +1 🦚`, 'success', 4500);
+          window.showToast(`Achievement unlocked: ${ach.name}`, 'success', 4500);
         }
       }
     }).catch(() => {});

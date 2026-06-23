@@ -36,5 +36,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.10.1": true,
+    "ssh2@1.17.0": true
   }
 }

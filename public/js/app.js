@@ -3,13 +3,14 @@ import { loadSession, isAuthenticated, toggleAuth, handleAuth, logout, updateNav
 import { loadHome, filterEnglishTitles, loadGenreContent, closeGenre, loadMoreGenre, loadStudioContent, scrollRow, renderRow } from './home.js';
 import { debounceSearch, performSearch, loadMoreSearch, openSearchFilters, closeSearchFilters, applyFilters, initSearch } from './search.js';
 import { openDetail, closeDetail, playFromDetail, openTrailer, closeTrailer, initDetailModal } from './detail.js';
-import { playContent, stopPlayer, playTVEpisode, prevEpisode, nextEpisode, playNextEpisode, cancelCountdown, toggleFullscreen, togglePip, toggleTheater, setVolume, toggleMute, getPlayerState } from './player.js';
+import { playContent, stopPlayer, playTVEpisode, prevEpisode, nextEpisode, playNextEpisode, cancelCountdown, toggleFullscreen, togglePip, toggleTheater, setVolume, toggleMute, getPlayerState, tryNextSource } from './player.js';
 import { toggleFavorite, loadPlayerExtras, loadComments, likeComment, replyComment, postComment, showTrailer, shareTitle, loadFavorites, loadWatchlist, loadForYou, loadNotifications, markAllNotifsRead, loadContinueWatching } from './social.js';
 import { loadProfile, saveProfile } from './profile.js';
-import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, dismissWelcome, updateContinueBar, hideContinueBar, initMouseGlow, initParallaxScroll } from './ui.js';
+import { showToast, showPage, showSection, cycleTheme, toggleShortcuts, initScrollAnimations, reinitScrollAnimations, initKeyboardShortcuts, updateContinueNav, handleUrlParams, showWelcome, dismissWelcome, updateContinueBar, hideContinueBar } from './ui.js';
 import { initPartyUI, updatePartyPanelVisibility } from './parties.js';
 import { getWatchHistory, saveWatchHistory, getTheme, setTheme } from './storage.js';
 import { renderCard, renderTopTen, renderSkeletons } from './templates.js';
+import { initAnimationBridge } from './animation-bridge.js';
 
 // Expose to window for inline event handlers and backward compatibility
 function exposeAll() {
@@ -63,6 +64,7 @@ function exposeAll() {
   window.updateContinueNav = updateContinueNav;
   window.reinitScrollAnimations = reinitScrollAnimations;
   window.getPlayerState = getPlayerState;
+  window.tryNextSource = tryNextSource;
   window.hideContinueBar = hideContinueBar;
   window.openDetail = openDetail;
   window.closeDetail = closeDetail;
@@ -100,11 +102,8 @@ async function init() {
   // Init scroll animations
   initScrollAnimations();
 
-  // Init mouse glow effect
-  initMouseGlow();
-
-  // Init parallax scroll effect
-  initParallaxScroll();
+  // Init animation bridge for AI-powered animations
+  initAnimationBridge();
 
   // Update continue nav
   updateContinueNav();
@@ -132,16 +131,6 @@ async function init() {
     if (e.data?.type === 'volumeState') {
       if (e.data.volume != null) window._volume = e.data.volume;
       if (e.data.muted != null) window._muted = e.data.muted;
-    }
-  });
-
-  // Button ripple
-  document.addEventListener('mousemove', (e) => {
-    const btn = e.target.closest('.hero-play-btn, .play-btn, .server-btn');
-    if (btn) {
-      const rect = btn.getBoundingClientRect();
-      btn.style.setProperty('--x', ((e.clientX - rect.left) / rect.width * 100) + '%');
-      btn.style.setProperty('--y', ((e.clientY - rect.top) / rect.height * 100) + '%');
     }
   });
 

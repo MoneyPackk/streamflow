@@ -22,8 +22,9 @@ const searchRoutes = require('../routes/search');
 const chatRoutes = require('../routes/chat');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const db = initDB();
+const animationDirectorRoutes = require('../routes/animation-director');
 
 // Trust nginx proxy so rate limiter sees real client IPs
 app.set('trust proxy', 1);
@@ -88,6 +89,7 @@ app.use('/api/social', socialRoutes(db));
 app.use('/api/settings', settingsRoutes(db));
 app.use('/api/search', searchRoutes());
 app.use('/api/chat', chatRoutes());
+app.use('/api/animation-director', animationDirectorRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({
