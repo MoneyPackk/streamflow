@@ -341,37 +341,13 @@ function tryServer(idx) {
     iframe.src = source.load_url;
   });
 
-  // When the iframe loads, hide the spinner and show the player.
-  // Then wait 3s and verify the embed actually rendered content.
-  // Cross-origin iframes fire onload even when blocked by X-Frame-Options,
-  // so we check contentWindow.length (sub-iframes) as a heuristic.
-  // Most embed providers use sub-iframes for their video players.
+  // When the iframe loads, hide the spinner and resolve as success.
+  // Cross-origin iframes fire onload even when blocked, but the 4 providers
+  // we use are verified to allow embedding. If a specific movie doesn't
+  // have a stream, the provider page will show its own error within the
+  // iframe. The user can click "try another source" to switch.
   iframe.onload = () => {
-    if (resolved) return;
-    if (loadingEl) loadingEl.style.display = 'none';
-
-    // Wait 3s for the embed to initialize its sub-iframes, then verify.
-    setTimeout(() => {
-      if (resolved) return;
-      try {
-        // contentWindow.length = number of sub-iframes inside the embed.
-        // 0 = blank/blocked page. >0 = embed rendered with player iframes.
-        // If we can't access it (cross-origin), assume success.
-        const subFrames = iframe.contentWindow ? iframe.contentWindow.length : 0;
-        if (subFrames > 0) {
-          resolveSuccess();
-        } else {
-          // No sub-iframes — might be blocked or using a div player.
-          // Check if the iframe has any visible dimension (not collapsed).
-          // If we can't tell, assume success and let the user decide.
-          resolveSuccess();
-        }
-      } catch (e) {
-        // Cross-origin access threw — the embed loaded from a different domain.
-        // This is normal and means it's working. Mark as success.
-        resolveSuccess();
-      }
-    }, 3000);
+    resolveSuccess();
   };
 
   iframe.onerror = () => {
