@@ -1,22 +1,24 @@
 {
-  "name": "PeacocksStreams",
-  "short_name": "Peacocks",
-  "description": "Unlimited movies & TV. 100% ad-free. Zero bullshit.",
+  "name": "Streamora",
+  "short_name": "Streamora",
+  "description": "Where every story streams. Movies and TV shows in HD.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#06060a",
-  "theme_color": "#a855f7",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
   "orientation": "any",
   "icons": [
     {
-      "src": "/images/peacock-tiny.png",
-      "sizes": "48x48",
-      "type": "image/png"
+      "src": "/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/images/peacock-user.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/images/logo-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

@@ -3,22 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PeacocksStreams — Watch Free Movies & TV Shows</title>
-  <meta name="description" content="Stream the latest movies and TV shows for free. No registration required. HD quality, multiple sources.">
-  <meta property="og:title" content="PeacocksStreams">
-  <meta property="og:description" content="Unlimited movies & TV. 100% ad-free. Zero bullshit. 🦚">
+  <title>Streamora — Where Every Story Streams</title>
+  <meta name="description" content="Stream movies and TV shows in HD. Where every story streams. No ads, no sign-up required.">
+  <meta property="og:title" content="Streamora — Where Every Story Streams">
+  <meta property="og:description" content="Stream movies and TV shows in HD. Where every story streams.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://moneypack.wtf">
-  <meta property="og:image" content="https://moneypack.wtf/images/peacock-user.png">
-  <meta property="og:image:width" content="512">
-  <meta property="og:image:height" content="512">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PeacocksStreams — Watch Free Movies & TV Shows">
-  <meta name="twitter:description" content="Unlimited movies & TV. 100% ad-free. Zero bullshit. 🦚">
-  <meta name="twitter:image" content="https://moneypack.wtf/images/peacock-user.png">
-  <meta name="theme-color" content="#020408">
-  <link rel="icon" href="/images/peacock-user.png">
-  <link rel="apple-touch-icon" href="/images/peacock-pfp.png">
+  <meta property="og:image" content="https://moneypack.wtf/images/logo-full.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Streamora — Where Every Story Streams">
+  <meta name="twitter:description" content="Stream movies and TV shows in HD. Where every story streams.">
+  <meta name="twitter:image" content="https://moneypack.wtf/images/logo-full.svg">
+  <meta name="theme-color" content="#0a0a0c">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/logo-mark.svg">
   <link rel="manifest" href="/manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -43,11 +41,11 @@
   <!-- Welcome Animation -->
   <div class="welcome-overlay" id="welcome-overlay">
     <div class="welcome-content">
-      <img src="/images/peacock-user.png" class="welcome-peacock" alt="PeacocksStreams">
-      <h1 class="welcome-title">PeacocksStreams</h1>
-      <p class="welcome-subtitle">Welcome to the flock 🦚</p>
-      <p class="welcome-tagline">Unlimited movies & TV. 100% ad-free. Zero bullshit.</p>
-      <button type="button" class="welcome-enter-btn" id="welcome-enter-btn">Enter the flock →</button>
+      <img src="/images/logo-mark.svg" class="welcome-peacock" alt="Streamora">
+      <h1 class="welcome-title">Streamora</h1>
+      <p class="welcome-subtitle">Where every story streams</p>
+      <p class="welcome-tagline">Stream movies and TV shows in HD. No ads, no sign-up required.</p>
+      <button type="button" class="welcome-enter-btn" id="welcome-enter-btn">Start watching →</button>
       <div class="welcome-loader"></div>
     </div>
   </div>
@@ -109,8 +107,8 @@
   <nav class="top-nav">
     <div class="nav-inner">
       <a href="#" class="logo" onclick="showPage('browse')">
-        <img src="/images/peacock-tiny.png" alt="PeacocksStreams" class="peacock-icon">
-        <span class="logo-text">PeacocksStreams</span>
+        <img src="/images/logo-mark.svg" alt="Streamora" class="peacock-icon">
+        <span class="logo-text">Streamora</span>
       </a>
       <div class="nav-center">
         <div class="nav-search-inline">
@@ -147,7 +145,7 @@
         </button>
         <a href="#" id="nav-login" class="nav-signin-btn">Sign In</a>
         <a href="#" id="nav-logout" onclick="logout()" style="display:none" class="nav-user-btn">
-          <img src="/images/peacock-pfp.png" class="user-pfp" alt="Your profile">
+          <img src="/images/logo-mark.svg" class="user-pfp" alt="Your profile">
           <span id="nav-username">Account</span>
         </a>
       </div>
@@ -185,9 +183,9 @@
           <div class="hero-badge-row">
             <div class="hero-badge" id="hero-badge">TRENDING NOW</div>
           </div>
-          <h1 id="hero-title" class="hero-title">PeacocksStreams</h1>
+          <h1 id="hero-title" class="hero-title">Streamora</h1>
           <div class="hero-meta" id="hero-meta"></div>
-          <p id="hero-desc" class="hero-desc">Your premium streaming destination. Unlimited movies & TV shows, completely free.</p>
+          <p id="hero-desc" class="hero-desc">Where every story streams. Movies and TV shows in HD.</p>
           <div class="hero-actions" id="hero-actions" style="display:none">
             <button class="hero-play-btn" id="hero-play-btn">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -357,7 +355,7 @@
     <div id="page-profile" class="page">
       <div class="profile-header">
         <div class="profile-avatar-wrap">
-          <img src="/images/peacock-pfp.png" class="profile-avatar" id="profile-avatar" alt="Your profile avatar">
+          <img src="/images/logo-mark.svg" class="profile-avatar" id="profile-avatar" alt="Your profile avatar">
           <div class="profile-pfp-skin" id="profile-pfp-skin"></div>
         </div>
         <div class="profile-info">
@@ -366,7 +364,7 @@
           <div class="profile-stats">
             <div class="stat-box">
               <div class="stat-value" id="profile-credits">0</div>
-              <div class="stat-label">🦚 Peacock Credits</div>
+              <div class="stat-label">Streamora Credits</div>
             </div>
             <div class="stat-box">
               <div class="stat-value" id="profile-streak">0</div>
@@ -417,7 +415,7 @@
       </div>
 
       <div class="profile-section">
-        <h2>Peacock Store</h2>
+        <h2>Streamora Store</h2>
         <p class="store-balance">Balance: <strong id="store-balance">0</strong> 🦚</p>
         <div class="store-tabs">
           <button class="store-tab active" data-tab="themes">Themes</button>
@@ -520,8 +518,8 @@
       <div class="player-wrapper">
         <div class="player-chrome" id="player-chrome" style="display:none">
           <div class="player-chrome-header">
-            <img src="/images/peacock-tiny.png" class="chrome-peacock" alt="Peacocks">
-            <span class="chrome-title">Peacocks Player</span>
+            <img src="/images/logo-mark.svg" class="chrome-peacock" alt="Streamora">
+            <span class="chrome-title">Streamora Player</span>
             <span class="chrome-quality" id="chrome-quality">HD</span>
             <span class="chrome-spacer"></span>
             <button class="chrome-btn" id="chrome-mute-btn" onclick="toggleMute()" aria-label="Mute" title="Mute (M)">🔊</button>
@@ -533,11 +531,11 @@
         </div>
         <div id="stream-loading" class="loading-state" style="display:none">
           <div class="spinner"></div>
-          <p>Loading from the best Peacocks service...</p>
+          <p>Loading the best available source...</p>
         </div>
         <div id="player-container" class="player-container" style="display:none">
           <iframe id="player-iframe" src="" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" onload="clearTimeout(window._sourceRetryTimer)"></iframe>
-          <img src="/images/peacock-user.png" class="player-watermark" alt="PeacocksStreams">
+          <img src="/images/logo-mark.svg" class="player-watermark" alt="Streamora">
           <div class="next-episode-countdown" id="next-ep-countdown" style="display:none">
             <p>Next episode in <span id="countdown-seconds">5</span>s</p>
             <button onclick="playNextEpisode()">▶ Play Now</button>
@@ -602,62 +600,62 @@
     <div id="page-login" class="page">
       <div class="auth-wrapper">
         <div class="auth-benefits">
-          <h2>Why join the flock?</h2>
-          <p class="auth-tag">It's free. It's gangster. Here's what you get:</p>
+          <h2>Why sign up?</h2>
+          <p class="auth-tag">Free forever. Here's what you get:</p>
           <ul class="auth-perks">
             <li>
               <span class="perk-icon">🎁</span>
               <div>
-                <strong>5 Peacock Credits</strong> on signup — spend them to unlock beast mode features
+                <strong>5 Streamora Credits</strong> on signup — unlock premium features
               </div>
             </li>
             <li>
               <span class="perk-icon">✨</span>
               <div>
-                <strong>Personalized "For You"</strong> — recommendations based on your taste
+                <strong>Personalized recommendations</strong> — based on your taste
               </div>
             </li>
             <li>
               <span class="perk-icon">⚡</span>
               <div>
-                <strong>Achievement Badges</strong> — collect them all (now 19 to earn!)
+                <strong>Achievement badges</strong> — collect them all
               </div>
             </li>
             <li>
               <span class="perk-icon">📋</span>
               <div>
-                <strong>Watchlist + Reminders</strong> — never miss a release
+                <strong>Watchlist &amp; reminders</strong> — never miss a release
               </div>
             </li>
             <li>
               <span class="perk-icon">🎉</span>
               <div>
-                <strong>Watch Parties</strong> — sync with friends, chat, react in real time
+                <strong>Watch parties</strong> — sync with friends, chat in real time
               </div>
             </li>
             <li>
               <span class="perk-icon">⭐</span>
               <div>
-                <strong>Rate &amp; Review</strong> — build your taste profile
+                <strong>Rate &amp; review</strong> — build your taste profile
               </div>
             </li>
             <li>
-              <span class="perk-icon">🦚</span>
+              <span class="perk-icon">🎨</span>
               <div>
-                <strong>Custom Peacock Skins</strong> — gold, neon, fire, diamond
+                <strong>Custom themes &amp; skins</strong> — personalize your experience
               </div>
             </li>
             <li>
-              <span class="perk-icon">🚫</span>
+              <span class="perk-icon">🔒</span>
               <div>
-                <strong>Zero Tracking · Zero Ads</strong> — what you watch is your business
+                <strong>No tracking · No ads</strong> — your viewing is private
               </div>
             </li>
           </ul>
         </div>
         <div class="auth-form">
-          <img src="/images/peacock-pfp.png" class="auth-peacock-pfp" alt="PeacocksStreams">
-          <div class="auth-logo">PeacocksStreams</div>
+          <img src="/images/logo-mark.svg" class="auth-peacock-pfp" alt="Streamora">
+          <div class="auth-logo">Streamora</div>
           <h2 id="auth-title">Sign In</h2>
           <input type="email" id="auth-email" placeholder="Email">
           <input type="password" id="auth-password" placeholder="Password">
@@ -665,7 +663,7 @@
           <p class="auth-error" id="auth-error"></p>
           <button onclick="handleAuth()" id="auth-btn">Sign In</button>
           <p class="auth-toggle" id="auth-toggle" onclick="toggleAuth()">Don't have an account? <a href="#">Register</a></p>
-          <p class="auth-pfp-note" id="auth-pfp-note">🦚 New accounts get a gangster peacock PFP + 5 free credits</p>
+          <p class="auth-pfp-note" id="auth-pfp-note">New accounts receive a profile avatar and 5 free credits</p>
         </div>
       </div>
     </div>
@@ -674,15 +672,15 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <img src="/images/peacock-tiny.png" alt="PeacocksStreams" class="footer-peacock">
-          <span class="footer-name">PeacocksStreams</span>
+          <img src="/images/logo-mark.svg" alt="Streamora" class="footer-peacock">
+          <span class="footer-name">Streamora</span>
         </div>
-        <p class="footer-tag">Unlimited movies & TV. 100% ad-free. Zero bullshit.</p>
+        <p class="footer-tag">Stream movies and TV shows in HD. No ads, no sign-up required.</p>
         <div class="footer-links">
           <a href="#" onclick="showPage('browse'); return false;">Home</a>
           <a href="#" onclick="showPage('login'); return false;">Sign In</a>
           <span class="footer-divider">·</span>
-          <span class="footer-meta">© 2026 PeacocksStreams · No tracking. No ads. No mercy.</span>
+          <span class="footer-meta">© 2026 Streamora · Where every story streams</span>
         </div>
       </div>
     </footer>

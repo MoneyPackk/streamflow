@@ -94,7 +94,7 @@ app.use('/api/animation-director', animationDirectorRoutes);
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
-    service: 'PeacocksStreams',
+    service: 'Streamora',
     version: process.env.npm_package_version || '1.0.0',
     uptime: Math.floor(process.uptime()),
     time: new Date().toISOString(),
@@ -118,7 +118,7 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 server.listen(PORT, () => {
-  console.log(`PeacocksStreams running on http://localhost:${PORT}`);
+  console.log(`Streamora running on http://localhost:${PORT}`);
   console.log(`TMDB proxy: http://localhost:${PORT}/api/tmdb`);
   console.log(`WebSocket: ws://localhost:${PORT}/ws`);
 });

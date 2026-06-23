@@ -75,7 +75,7 @@ function initWebSocket(server) {
 
     ws.send(JSON.stringify({
       type: 'connected',
-      message: 'PeacocksStreams real-time connected',
+      message: 'Streamora real-time connected',
       timestamp: new Date().toISOString(),
     }));
   });
