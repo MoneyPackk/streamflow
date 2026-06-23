@@ -30,6 +30,7 @@ export function stopPlayer() {
   const noStreams = document.getElementById('no-streams');
   const tvSelector = document.getElementById('tv-selector');
   const iframe = document.getElementById('player-iframe');
+  const video = document.getElementById('direct-player');
   if (container) container.style.display = 'none';
   if (loading) loading.style.display = 'none';
   if (noStreams) noStreams.style.display = 'none';
@@ -37,6 +38,7 @@ export function stopPlayer() {
   const retry = document.getElementById('source-retry');
   if (retry) retry.style.display = 'none';
   if (iframe) iframe.src = 'about:blank';
+  if (video) { video.pause(); video.src = ''; video.style.display = 'none'; }
   currentSources = [];
   currentSourceIdx = 0;
 }
@@ -249,13 +251,53 @@ function updateVolumeUI() {
   if (btn) btn.textContent = _muted || _volume === 0 ? '🔇' : _volume < 0.5 ? '🔉' : '🔊';
 }
 
+// Try TorBox direct stream first. If available, use <video> element.
+// If not, fall back to embed providers.
+async function tryTorBox(tmdbId, type, season, episode) {
+  try {
+    let url = `/api/stream/${tmdbId}?type=${type}`;
+    if (season) url += `&season=${season}`;
+    if (episode) url += `&episode=${episode}`;
+    const data = await api(url);
+
+    if (data && data.available !== false && data.url) {
+      // TorBox has it — use direct <video> element
+      document.getElementById('stream-loading').style.display = 'none';
+      document.getElementById('player-container').style.display = 'block';
+      document.getElementById('player-iframe').style.display = 'none';
+      const video = document.getElementById('direct-player');
+      video.style.display = 'block';
+      video.src = data.url;
+      video.play().catch(() => {});
+      document.getElementById('player-chrome').style.display = 'block';
+      // Show retry button in case the link fails
+      const retry = document.getElementById('source-retry');
+      if (retry) retry.style.display = 'none';
+      saveToWatchHistory(tmdbId, type, season, episode, currentItem?.title || '');
+      return true; // TorBox handled it
+    }
+  } catch (e) {
+    console.warn('[PS] TorBox unavailable:', e.message);
+  }
+  return false; // Fall back to embeds
+}
+
 async function loadEmbedSources(tmdbId, type, season, episode) {
   document.getElementById('stream-loading').style.display = 'flex';
   document.getElementById('player-container').style.display = 'none';
   document.getElementById('no-streams').style.display = 'none';
   document.getElementById('player-iframe').src = 'about:blank';
+  document.getElementById('direct-player').style.display = 'none';
   clearTimeout(window._sourceLoadTimer);
   clearTimeout(window._sourceFinalTimer);
+
+  // Try TorBox first
+  const torBoxSuccess = await tryTorBox(tmdbId, type, season, episode);
+  if (torBoxSuccess) return;
+
+  // Hide the video player and show the iframe for embeds
+  document.getElementById('direct-player').style.display = 'none';
+  document.getElementById('player-iframe').style.display = 'block';
 
   try {
     let url = `/embed/${tmdbId}?type=${type}`;
