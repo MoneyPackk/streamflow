@@ -1,15 +1,9 @@
 // Embed Proxy — transparent 302 redirect to the provider URL.
-// We do NOT fetch and modify the HTML server-side. That breaks JS players
-// because cross-origin requests fail when served from our domain.
-// Instead we redirect, letting the browser load the embed directly.
-// The provider URL is never exposed in the page HTML — the iframe src
-// points to our endpoint, and the 302 happens at the HTTP level.
+// The provider URL is never exposed in the page HTML.
 
 const ALLOWED_DOMAINS = [
-  'vidsrc.cc', 'vidsrc.to', 'autoembed.co', 'vidlink.pro',
-  'embed.su', 'multiembed.mov', 'player.smashy.stream',
-  'moviesapi.club', 'www.2embed.cc', '111movies.com',
-  'rivestream.org', 'vidara.to',
+  'vidsrc.to', 'autoembed.co', 'vidlink.pro',
+  '111movies.net', '111movies.com',
 ];
 
 async function proxyEmbed(req, res) {
@@ -32,9 +26,6 @@ async function proxyEmbed(req, res) {
     return res.status(403).json({ error: 'Domain not allowed' });
   }
 
-  // Transparent redirect — browser loads the embed directly in the iframe.
-  // This preserves the provider's JS player, Cloudflare challenges, and all
-  // functionality that breaks when we try to fetch+serve modified HTML.
   res.redirect(302, decodedUrl);
 }
 
