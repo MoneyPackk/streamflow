@@ -5,13 +5,23 @@ import { useState } from "react";
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, subscription, logout } = useAuthStore();
   const [open, setOpen] = useState(false);
+
+  const isSubscribed = subscription && ["active", "trialing"].includes(subscription.status);
+  const plan = subscription?.plan || "free";
 
   const links = [
     { to: "/", label: "Home" },
     { to: "/browse", label: "Browse" },
   ];
+
+  const planBadge: Record<string, string> = {
+    free: "text-zinc-500",
+    basic: "text-blue-400",
+    premium: "text-emerald-400",
+    max: "text-amber-400",
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-800 bg-background/90 backdrop-blur-md">
@@ -32,6 +42,14 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+            <Link
+              to="/pricing"
+              className={`text-sm font-medium transition-colors ${
+                location.pathname === "/pricing" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Pricing
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -40,8 +58,15 @@ export default function Navbar() {
           </Link>
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground hidden sm:inline">{user.displayName}</span>
-              <button onClick={() => { logout(); navigate("/"); }} className="text-xs text-muted-foreground hover:text-primary transition-colors">Logout</button>
+              <Link to="/account" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
+                <span>{user.displayName || user.email.split("@")[0]}</span>
+                {isSubscribed && (
+                  <span className={`text-xs font-medium ${planBadge[plan] || "text-zinc-500"}`}>
+                    {plan.charAt(0).toUpperCase() + plan.slice(1)}
+                  </span>
+                )}
+              </Link>
+              <button onClick={() => { logout(); navigate("/"); }} className="text-xs text-muted-foreground hover:text-red-400 transition-colors">Logout</button>
             </div>
           ) : (
             <Link to="/auth" className="text-sm font-medium text-primary hover:text-emerald-400 transition-colors">Sign In</Link>
@@ -56,6 +81,7 @@ export default function Navbar() {
           {links.map((l) => (
             <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground">{l.label}</Link>
           ))}
+          <Link to="/pricing" onClick={() => setOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground">Pricing</Link>
           <Link to="/search" onClick={() => setOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground">Search</Link>
         </div>
       )}

@@ -96,7 +96,12 @@ function authRoutes(db) {
       const achievementCount = db.prepare('SELECT COUNT(*) as c FROM achievements WHERE user_id = ?').get(user.id).c;
       const watchCount = db.prepare('SELECT COUNT(*) as c FROM watch_history WHERE user_id = ?').get(user.id).c;
       const favCount = db.prepare('SELECT COUNT(*) as c FROM favorites WHERE user_id = ?').get(user.id).c;
-      res.json({ ...user, achievement_count: achievementCount, watch_count: watchCount, fav_count: favCount });
+      // Get subscription info
+      const sub = db.prepare('SELECT plan_id, status, current_period_end, canceled_at FROM subscriptions WHERE user_id = ?').get(user.id);
+      const subscription = sub && ['active', 'trialing', 'past_due'].includes(sub.status)
+        ? { plan: sub.plan_id, status: sub.status, current_period_end: sub.current_period_end, canceled_at: sub.canceled_at }
+        : { plan: 'free', status: 'inactive', current_period_end: null, canceled_at: null };
+      res.json({ ...user, achievement_count: achievementCount, watch_count: watchCount, fav_count: favCount, subscription });
     } catch (e) {
       if (e instanceof ApiError) return next(e);
       next(new ApiError(401, 'Invalid or expired token'));

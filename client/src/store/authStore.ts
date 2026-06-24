@@ -3,18 +3,27 @@ import { persist } from "zustand/middleware";
 
 interface User { id: string; email: string; displayName?: string; }
 
+interface SubscriptionInfo {
+  plan: string;
+  status: string;
+  current_period_end: string | null;
+}
+
 interface AuthState {
   user: User | null;
+  subscription: SubscriptionInfo | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => void;
+  setSubscription: (sub: SubscriptionInfo | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
+      subscription: null,
       isLoading: false,
       login: async (email) => {
         set({ isLoading: true });
@@ -26,9 +35,13 @@ export const useAuthStore = create<AuthState>()(
         await new Promise((r) => setTimeout(r, 800));
         set({ user: { id: `u_${Date.now()}`, email, displayName }, isLoading: false });
       },
-      logout: () => set({ user: null }),
+      logout: () => set({ user: null, subscription: null }),
+      setSubscription: (sub) => set({ subscription: sub }),
     }),
-    { name: "streamora-auth" }
+    {
+      name: "streamora-auth",
+      partialize: (state) => ({ user: state.user, subscription: state.subscription }),
+    }
   )
 );
 

@@ -162,6 +162,20 @@ function initDB() {
       reason TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+      stripe_customer_id TEXT,
+      stripe_subscription_id TEXT,
+      plan_id TEXT NOT NULL DEFAULT 'free',
+      status TEXT DEFAULT 'incomplete',
+      current_period_start TEXT,
+      current_period_end TEXT,
+      canceled_at TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   // Migrations for existing users table

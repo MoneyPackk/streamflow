@@ -20,6 +20,8 @@ const partiesRoutes = require('../routes/parties');
 const settingsRoutes = require('../routes/settings');
 const searchRoutes = require('../routes/search');
 const chatRoutes = require('../routes/chat');
+const subscriptionRoutes = require('../routes/subscription');
+const { webhookRouter } = require('../routes/subscription');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -59,6 +61,9 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Stripe webhook must come BEFORE express.json() (needs raw body)
+app.use('/api/subscriptions/webhook', webhookRouter(db));
+
 app.use(express.json({ limit: '1mb' }));
 app.use(compression());
 app.use(cookieParser());
@@ -90,6 +95,7 @@ app.use('/api/settings', settingsRoutes(db));
 app.use('/api/search', searchRoutes());
 app.use('/api/chat', chatRoutes());
 app.use('/api/animation-director', animationDirectorRoutes);
+app.use('/api/subscriptions', subscriptionRoutes(db));
 
 app.get('/api/health', (_req, res) => {
   res.json({
