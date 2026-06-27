@@ -274,9 +274,9 @@ function tmdbRoutes() {
           show.seasons = (data.seasons || [])
             .filter(s => s.season_number > 0)
             .map(s => ({
-              season_number: s.season_number,
+              number: s.season_number,
+              title: s.name,
               episode_count: s.episode_count,
-              name: s.name,
               poster_url: s.poster_path ? `https://image.tmdb.org/t/p/w500${s.poster_path}` : null,
             }));
           try {

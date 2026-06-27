@@ -58,7 +58,10 @@ export default function Search() {
                   <h3 className="text-sm font-medium truncate">{movie.title}</h3>
                   <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
                     <span>{movie.year}</span>
-                    <span className="text-yellow-500">★ {movie.rating.toFixed(1)}</span>
+                    <div className="flex items-center gap-1">
+                      {movie.is_tv && <span className="text-primary font-medium">TV</span>}
+                      <span className="text-yellow-500">★ {movie.rating.toFixed(1)}</span>
+                    </div>
                   </div>
                 </div>
               </div>

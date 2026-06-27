@@ -66,7 +66,9 @@ export default function MovieDetail() {
               <span>{movie.year}</span>
               {!isTv && <span>{movie.duration}</span>}
               {isTv && <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">TV Series</span>}
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">{movie.director}</span>
+              {movie.director ? (
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">{movie.director}</span>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2 mt-3">
               {movie.genres?.map((g) => (

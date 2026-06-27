@@ -14,6 +14,11 @@ export default function MovieCard({ movie }: Props) {
           alt={movie.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
+        {movie.is_tv && (
+          <span className="absolute top-2 left-2 text-[10px] font-semibold bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+            TV
+          </span>
+        )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
           <svg className="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />

@@ -176,7 +176,7 @@ function contentRoutes(db) {
       SELECT tmdb_id, media_type, season_number, episode_number, title, poster_url,
              progress_seconds, runtime_seconds, completed, watched_at
       FROM watch_history
-      WHERE user_id = ? AND (completed = 0 OR progress_seconds > 60)
+      WHERE user_id = ? AND completed = 0 AND progress_seconds > 60
       ORDER BY watched_at DESC
       LIMIT 24
     `).all(req.user.id);

@@ -84,7 +84,7 @@ export default function Player() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [id, type]);
+  }, [id, type, season, episode]);
 
   // Set up preview timer
   useEffect(() => {

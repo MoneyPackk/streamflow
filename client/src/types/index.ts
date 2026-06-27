@@ -20,7 +20,7 @@ export interface CastMember {
   id: number;
   name: string;
   character: string;
-  profile_path?: string;
+  photo?: string;
 }
 
 export interface Season {
