@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { moviesApi } from "../services/api";
 import { useMovieStore } from "../store/authStore";
 import SeasonSelector from "../components/movie/SeasonSelector";
@@ -9,6 +9,7 @@ const API = "/api";
 
 export default function MovieDetail() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,14 +18,18 @@ export default function MovieDetail() {
   const [epsLoading, setEpsLoading] = useState(false);
   const { addToWatchHistory, addToMyList, removeFromMyList, isInMyList } = useMovieStore();
 
+  // Use type from URL (passed from card clicks) or auto-detect
+  const mediaType = (searchParams.get("type") as "movie" | "tv") || undefined;
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    moviesApi.get(id).then((m) => {
+    // Pass the type from the URL — avoids TMDB id collisions (same id for different movie & tv)
+    moviesApi.get(id, mediaType).then((m) => {
       setMovie(m);
       addToWatchHistory(m.id);
     }).catch(() => navigate("/")).finally(() => setLoading(false));
-  }, [id]);
+  }, [id, mediaType]);
 
   // Fetch episodes when season changes (TV only)
   useEffect(() => {

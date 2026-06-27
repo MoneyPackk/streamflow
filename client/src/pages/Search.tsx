@@ -50,7 +50,7 @@ export default function Search() {
             {results.map((movie) => (
               <div
                 key={movie.id}
-                onClick={() => navigate(`/movie/${movie.id}`)}
+                onClick={() => navigate(`/movie/${movie.id}${movie.is_tv ? '?type=tv' : ''}`)}
                 className="bg-card rounded-lg overflow-hidden hover:ring-1 hover:ring-primary/30 transition-all cursor-pointer"
               >
                 <img src={movie.poster_path} alt={movie.title} className="w-full aspect-[2/3] object-cover" />

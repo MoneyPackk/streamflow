@@ -48,7 +48,7 @@ export default function Player() {
 
     Promise.all([
       streamApi.get(id, type, season, episode),
-      moviesApi.get(id).catch(() => null),
+      moviesApi.get(id, type).catch(() => null),
     ])
       .then(([streamData, movieData]) => {
         setStream(streamData);

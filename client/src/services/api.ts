@@ -75,8 +75,13 @@ export const moviesApi = {
     return json<TmdbResponse>(`${API}/tmdb/popular?type=movie`)
       .then(r => (r.items || []).map(mapTmdbItem));
   },
-  get: async (id: number | string) => {
-    // Try movie first, then tv
+  get: async (id: number | string, type?: "movie" | "tv") => {
+    if (type) {
+      // Type specified (from card with is_tv flag) — use it directly
+      const data = await json<any>(`${API}/tmdb/${id}?type=${type}`);
+      return mapTmdbItem(data);
+    }
+    // No type specified — try movie first, then tv
     const data = await json<any>(`${API}/tmdb/${id}?type=movie`).catch(() =>
       json<any>(`${API}/tmdb/${id}?type=tv`)
     );

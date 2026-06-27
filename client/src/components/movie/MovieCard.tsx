@@ -7,7 +7,7 @@ interface Props {
 
 export default function MovieCard({ movie }: Props) {
   return (
-    <Link to={`/movie/${movie.id}`} className="group flex-shrink-0 w-[160px]">
+    <Link to={`/movie/${movie.id}${movie.is_tv ? '?type=tv' : ''}`} className="group flex-shrink-0 w-[160px]">
       <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-card">
         <img
           src={movie.poster_path}
