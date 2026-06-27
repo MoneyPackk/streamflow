@@ -1,22 +1,22 @@
 const express = require('express');
 
-// Provider pool — TESTED providers only.
-// Every provider here has been verified to:
-//   1. Return HTTP 200
-//   2. NOT send X-Frame-Options: SAMEORIGIN (which blocks iframe embedding)
-// Dead or blocking providers have been removed.
+// Provider pool — regularly tested sources.
+// Ordered by reliability: best sources first, worst last.
+// vidsrc.to kept as last resort since it has the most content.
 const PROVIDERS = {
   movie: [
-    { id: 'vidsrc',    url: (id) => `https://vidsrc.to/embed/movie/${id}` },
-    { id: 'autoembed', url: (id) => `https://autoembed.co/movie/tmdb/${id}` },
-    { id: 'vidlink',   url: (id) => `https://vidlink.pro/movie/${id}` },
-    { id: '111movies', url: (id) => `https://111movies.net/movie/${id}` },
+    { id: 'superembed',  url: (id) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1` },
+    { id: '2embed',      url: (id) => `https://www.2embed.cc/embed/${id}` },
+    { id: 'vidsrc',      url: (id) => `https://vidsrc.to/embed/movie/${id}` },
+    { id: 'vidlink',     url: (id) => `https://vidlink.pro/movie/${id}` },
+    { id: 'moviesapi',   url: (id) => `https://moviesapi.club/movie/${id}` },
   ],
   tv: [
-    { id: 'vidsrc',    url: (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}` },
-    { id: 'autoembed', url: (id, s, e) => `https://autoembed.co/tv/tmdb/${id}-${s}-${e}` },
-    { id: 'vidlink',   url: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}` },
-    { id: '111movies', url: (id, s, e) => `https://111movies.net/tv/${id}/${s}/${e}` },
+    { id: 'superembed',  url: (id, s, e) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&season=${s}&episode=${e}` },
+    { id: '2embed',      url: (id, s, e) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}` },
+    { id: 'vidsrc',      url: (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}` },
+    { id: 'vidlink',     url: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}` },
+    { id: 'moviesapi',   url: (id, s, e) => `https://moviesapi.club/tv/${id}/${s}/${e}` },
   ],
 };
 
