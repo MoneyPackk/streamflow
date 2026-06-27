@@ -76,7 +76,7 @@ function streamRoutes() {
     }
   }
 
-  // Try Real-Debrid: check cache, add magnet, unrestrict
+  // Try Real-Debrid: add magnet, select files, unrestrict
   async function resolveViaRealDebrid(streams, rdKey) {
     if (!rdKey || streams.length === 0) return null;
 
@@ -91,38 +91,8 @@ function streamRoutes() {
 
     for (const s of candidates) {
       try {
-        // 1. Check if Real-Debrid has this hash cached
-        const availRes = await rdApi.get(`/torrents/instantAvailability/${s.infoHash}`);
-        const availData = availRes.data;
-
-        // If cached, availData[s.infoHash] will have variants array
-        const variants = availData?.[s.infoHash];
-        if (!variants || variants.length === 0) continue;
-
-        // Find the best file: prefer the one matching our fileIdx, or largest
-        const rdFiles = variants[0] || [];
-        let selectedFile = null;
-        let selectedIdx = s.fileIdx;
-
-        // If we have a specific fileIdx, check if it's available
-        if (s.fileIdx > 0 && rdFiles[s.fileIdx]) {
-          selectedFile = rdFiles[s.fileIdx];
-        } else {
-          // Pick the largest file
-          let largestSize = 0;
-          for (const [idx, f] of Object.entries(rdFiles)) {
-            const size = parseInt(f?.files?.[0]?.filesize || f?.filesize || '0');
-            if (size > largestSize) {
-              largestSize = size;
-              selectedIdx = parseInt(idx);
-              selectedFile = f;
-            }
-          }
-        }
-
-        if (!selectedFile) continue;
-
-        // 2. Add magnet to Real-Debrid
+        // 1. Add magnet to Real-Debrid
+        // If it's cached, RD will immediately show it as available
         const magnet = `magnet:?xt=urn:btih:${s.infoHash}`;
         const addRes = await rdApi.post('/torrents/addMagnet', `magnet=${encodeURIComponent(magnet)}`, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -131,22 +101,55 @@ function streamRoutes() {
         const torrentId = addRes.data?.id;
         if (!torrentId) continue;
 
-        // 3. Select files to download (select the one we want)
-        await rdApi.post(`/torrents/selectFiles/${torrentId}`, `files=${selectedIdx}`, {
+        // 2. Check what files are available and select them
+        const infoRes = await rdApi.get(`/torrents/info/${torrentId}`);
+        const info = infoRes.data;
+
+        // If RD doesn't have this cached, status will be 'magnet_conversion' or error
+        if (info?.status === 'magnet_error' || info?.status === 'error') {
+          // Delete failed torrent
+          await rdApi.delete(`/torrents/delete/${torrentId}`).catch(() => {});
+          continue;
+        }
+
+        // Select all files to start processing
+        const files = info?.files || [];
+        if (files.length === 0) {
+          await rdApi.delete(`/torrents/delete/${torrentId}`).catch(() => {});
+          continue;
+        }
+
+        // Find the largest video file
+        let selectedIdxs = [];
+        let bestVideoIdx = '0';
+        let bestSize = 0;
+        for (const f of files) {
+          const idx = f.id;
+          const fSize = parseInt(f.size) || 0;
+          const isVideo = (f.path || '').match(/\.(mp4|mkv|avi|mov|m4v|webm)$/i);
+          if (isVideo && fSize > bestSize) {
+            bestSize = fSize;
+            bestVideoIdx = idx;
+          }
+          selectedIdxs.push(idx);
+        }
+
+        // Select the largest video file (or all if we can't find video)
+        await rdApi.post(`/torrents/selectFiles/${torrentId}`, `files=${bestVideoIdx}`, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
 
-        // 4. Wait for it to be ready (poll up to 10s)
+        // 3. Poll until ready (up to 15s)
         let downloadLink = null;
-        for (let i = 0; i < 5; i++) {
-          await new Promise(r => setTimeout(r, 2000));
-          const infoRes = await rdApi.get(`/torrents/info/${torrentId}`);
-          const info = infoRes.data;
+        for (let i = 0; i < 7; i++) {
+          await new Promise(r => setTimeout(r, 2000 + (i * 500)));
+          const pollRes = await rdApi.get(`/torrents/info/${torrentId}`);
+          const pollInfo = pollRes.data;
 
-          if (info?.links?.length > 0) {
-            const link = info.links[selectedIdx] || info.links[0];
+          if (pollInfo?.status === 'downloaded' && pollInfo?.links?.length > 0) {
+            // Find the link matching our selected file
+            const link = pollInfo.links.find(l => (l.id || '') === bestVideoIdx) || pollInfo.links[0];
             if (link) {
-              // 5. Unrestrict the link to get a direct download URL
               const unrestrictRes = await rdApi.post('/unrestrict/link', `link=${encodeURIComponent(link)}`, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               });
@@ -155,8 +158,11 @@ function streamRoutes() {
             }
           }
 
-          if (info?.status === 'downloaded' || info?.status === 'magnet_error') break;
+          if (pollInfo?.status === 'magnet_error' || pollInfo?.status === 'error') break;
         }
+
+        // Clean up the torrent from RD
+        await rdApi.delete(`/torrents/delete/${torrentId}`).catch(() => {});
 
         if (downloadLink) {
           return {
@@ -167,12 +173,8 @@ function streamRoutes() {
           };
         }
       } catch (err) {
-        // 403 = account not premium — no point trying more hashes
-        if (err.response?.status === 403) break;
-        // 404 = hash not cached — skip to next
-        if (err.response?.status !== 404) {
-          console.error(`[Stream] RD error for ${s.infoHash}:`, err.response?.status, err.message);
-        }
+        // If adding the magnet failed, this hash isn't on RD — skip
+        if (err.response?.status === 403) break; // account issue
         continue;
       }
     }
