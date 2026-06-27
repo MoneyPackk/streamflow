@@ -50,14 +50,12 @@ function streamRoutes() {
   async function scrapePirateBay(title, year, type, season, episode) {
     try {
       const searchQuery = encodeURIComponent(`${title} ${year || ''}`.trim());
-      const { data } = await axios.get(`https://apibay.org/q.php?q=${searchQuery}`, { timeout: 15000 });
+      const { data } = await axios.get(`https://apibay.org/q.php?q=${searchQuery}`, { timeout: 10000 });
       if (!data || !Array.isArray(data)) return [];
 
-      // Filter for video files
-      const videoCats = ['201', '202', '203', '204', '205', '206', '207', '208']; // movies
-      if (type === 'tv') {
-        videoCats.push('208'); // TV shows
-      }
+      // Filter for video files — limit to top results for speed
+      const videoCats = ['201', '202', '203', '204', '205', '206', '207', '208'];
+      if (type === 'tv') videoCats.push('208');
 
       return data
         .filter(t => t && t.info_hash && videoCats.includes(t.category))
@@ -80,13 +78,18 @@ function streamRoutes() {
 
   // Try Real-Debrid: check cache, add magnet, unrestrict
   async function resolveViaRealDebrid(streams, rdKey) {
+    if (!rdKey || streams.length === 0) return null;
+
     const rdApi = axios.create({
       baseURL: RD_API_BASE,
       headers: { Authorization: `Bearer ${rdKey}` },
       timeout: 15000,
     });
 
-    for (const s of streams) {
+    // Limit to first 5 streams max to avoid long timeouts
+    const candidates = streams.slice(0, 5);
+
+    for (const s of candidates) {
       try {
         // 1. Check if Real-Debrid has this hash cached
         const availRes = await rdApi.get(`/torrents/instantAvailability/${s.infoHash}`);
@@ -164,8 +167,10 @@ function streamRoutes() {
           };
         }
       } catch (err) {
-        // 403 = account not premium, 404 = hash not cached — skip silently
-        if (err.response?.status !== 404 && err.response?.status !== 403) {
+        // 403 = account not premium — no point trying more hashes
+        if (err.response?.status === 403) break;
+        // 404 = hash not cached — skip to next
+        if (err.response?.status !== 404) {
           console.error(`[Stream] RD error for ${s.infoHash}:`, err.response?.status, err.message);
         }
         continue;
@@ -178,7 +183,10 @@ function streamRoutes() {
   async function resolveViaTorBox(streams, tbKey) {
     if (!tbKey) return null;
 
-    for (const s of streams) {
+    // Limit to first 5 streams to avoid long timeouts
+    const candidates = streams.slice(0, 5);
+
+    for (const s of candidates) {
       try {
         // Check if TorBox has this hash cached
         const cachedRes = await axios.get(`${TORBOX_API}/torrents/checkcached`, {
