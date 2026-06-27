@@ -269,9 +269,7 @@ function streamRoutes() {
       const isSubscribed = req.user && hasActiveSubscription(req.app.locals.db, req.user.id);
 
       // 1. Scrape Torrentio for available torrents
-      console.log(`[Stream] Resolving ${type}/${tmdb_id}...`);
       let streams = await scrapeTorrentio(tmdb_id, type, season, episode);
-      console.log(`[Stream] Torrentio returned ${streams.length} streams`);
 
       // 1b. Fallback: if Torrentio returns nothing, search Pirate Bay
       if (streams.length === 0) {
@@ -283,11 +281,9 @@ function streamRoutes() {
           });
           const title = tmdbRes.data?.title || tmdbRes.data?.name || '';
           const year = (tmdbRes.data?.release_date || tmdbRes.data?.first_air_date || '').split('-')[0];
-          console.log(`[Stream] Searching Pirate Bay for "${title} ${year}"`);
           streams = await scrapePirateBay(title, year, type, season, episode);
-          console.log(`[Stream] Pirate Bay returned ${streams.length} streams`);
-        } catch (e) {
-          console.log(`[Stream] TMDB lookup failed:`, e.message);
+        } catch {
+          // TMDB lookup failed, proceed without fallback
         }
       }
 
@@ -299,7 +295,6 @@ function streamRoutes() {
       if (rdKey) {
         const rdResult = await resolveViaRealDebrid(streams, rdKey);
         if (rdResult) {
-          console.log(`[Stream] Resolved via Real-Debrid (${rdResult.quality}p)`);
           if (!isSubscribed) {
             return res.json({
               url: rdResult.url,
@@ -316,10 +311,8 @@ function streamRoutes() {
 
       // 3. Fallback to TorBox
       if (tbKey) {
-        console.log(`[Stream] Trying TorBox fallback...`);
         const tbResult = await resolveViaTorBox(streams, tbKey);
         if (tbResult) {
-          console.log(`[Stream] Resolved via TorBox (${tbResult.quality}p)`);
           if (!isSubscribed) {
             return res.json({
               url: tbResult.url,
