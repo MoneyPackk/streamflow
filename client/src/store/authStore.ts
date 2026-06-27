@@ -7,6 +7,7 @@ interface SubscriptionInfo {
   plan: string;
   status: string;
   current_period_end: string | null;
+  canceled_at: string | null;
 }
 
 interface AuthState {

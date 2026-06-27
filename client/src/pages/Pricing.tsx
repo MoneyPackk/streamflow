@@ -46,7 +46,7 @@ export default function Pricing() {
   const handleSubscribe = async (planId: string) => {
     if (planId === "free") {
       if (!isSubscribed) {
-        setSubscription({ plan: "free", status: "active", current_period_end: null });
+        setSubscription({ plan: "free", status: "active", current_period_end: null, canceled_at: null });
       }
       navigate("/");
       return;

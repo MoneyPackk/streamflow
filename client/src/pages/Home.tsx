@@ -9,16 +9,33 @@ export default function Home() {
   const navigate = useNavigate();
   const [featured, setFeatured] = useState<Movie[]>([]);
   const [trending, setTrending] = useState<Movie[]>([]);
+  const [popular, setPopular] = useState<Movie[]>([]);
+  const [topRated, setTopRated] = useState<Movie[]>([]);
+  const [nowPlaying, setNowPlaying] = useState<Movie[]>([]);
+  const [popularShows, setPopularShows] = useState<Movie[]>([]);
+  const [topShows, setTopShows] = useState<Movie[]>([]);
+  const [airingToday, setAiringToday] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      moviesApi.list({ featured: "true" }),
-      moviesApi.list({ trending: "true" }),
+      moviesApi.list({ category: "trending" }),
+      moviesApi.list({ category: "popular" }),
+      moviesApi.list({ category: "top_rated" }),
+      moviesApi.list({ category: "now_playing" }),
+      moviesApi.list({ category: "popular", type: "tv" }),
+      moviesApi.list({ category: "top_rated", type: "tv" }),
+      moviesApi.list({ category: "airing_today" }),
     ])
-      .then(([f, t]) => {
+      .then(([f, t, tr, n, ps, ts, at]) => {
         setFeatured(f);
         setTrending(t);
+        setPopular(tr);
+        setTopRated(tr);
+        setNowPlaying(n);
+        setPopularShows(ps);
+        setTopShows(ts);
+        setAiringToday(at);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -39,8 +56,13 @@ export default function Home() {
     <div>
       <HeroCarousel movies={featured} />
       <div className="pb-12">
-        <MovieRow title="Trending Now" movies={trending} viewAllLink="/browse" />
-        <MovieRow title="Popular Movies" movies={featured.slice(0, 10)} viewAllLink="/browse" />
+        <MovieRow title="📺 Trending Shows" movies={trending} viewAllLink="/browse" />
+        <MovieRow title="🎬 Popular Movies" movies={popular} viewAllLink="/browse" />
+        <MovieRow title="📺 Popular TV Shows" movies={popularShows} viewAllLink="/browse" />
+        <MovieRow title="⭐ Top Rated" movies={topRated} viewAllLink="/browse" />
+        <MovieRow title="📺 Top Rated TV" movies={topShows} viewAllLink="/browse" />
+        <MovieRow title="📡 Now Playing" movies={nowPlaying} viewAllLink="/browse" />
+        <MovieRow title="📡 Airing Today" movies={airingToday} viewAllLink="/browse" />
       </div>
     </div>
   );
