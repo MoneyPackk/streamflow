@@ -26,20 +26,56 @@ function streamRoutes() {
     } else {
       url = `${TORRENTIO}/stream/${type}/${tmdbId}.json`;
     }
-    const { data } = await axios.get(url, { timeout: 15000 });
-    if (!data?.streams) return [];
-    return data.streams
-      .filter(s => s.infoHash)
-      .map(s => {
-        const match = s.title ? s.title.match(/(\d{3,4})p/) : null;
-        return {
-          quality: match ? parseInt(match[1]) : 0,
-          infoHash: s.infoHash.toLowerCase(),
-          fileIdx: parseInt(s.fileIdx) || 0,
-          title: s.title || s.name || '',
-        };
-      })
-      .sort((a, b) => b.quality - a.quality);
+    try {
+      const { data } = await axios.get(url, { timeout: 15000 });
+      if (!data?.streams) return [];
+      return data.streams
+        .filter(s => s.infoHash)
+        .map(s => {
+          const match = s.title ? s.title.match(/(\d{3,4})p/) : null;
+          return {
+            quality: match ? parseInt(match[1]) : 0,
+            infoHash: s.infoHash.toLowerCase(),
+            fileIdx: parseInt(s.fileIdx) || 0,
+            title: s.title || s.name || '',
+          };
+        })
+        .sort((a, b) => b.quality - a.quality);
+    } catch {
+      return []; // Torrentio may be down
+    }
+  }
+
+  // Fallback scraper: search Pirate Bay via Apibay when Torrentio returns nothing
+  async function scrapePirateBay(title, year, type, season, episode) {
+    try {
+      const searchQuery = encodeURIComponent(`${title} ${year || ''}`.trim());
+      const { data } = await axios.get(`https://apibay.org/q.php?q=${searchQuery}`, { timeout: 15000 });
+      if (!data || !Array.isArray(data)) return [];
+
+      // Filter for video files
+      const videoCats = ['201', '202', '203', '204', '205', '206', '207', '208']; // movies
+      if (type === 'tv') {
+        videoCats.push('208'); // TV shows
+      }
+
+      return data
+        .filter(t => t && t.info_hash && videoCats.includes(t.category))
+        .map(t => {
+          const quality = t.name ? (t.name.match(/(\d{3,4})p/) || [])[1] : null;
+          return {
+            quality: quality ? parseInt(quality) : 0,
+            infoHash: t.info_hash.toLowerCase(),
+            fileIdx: 0,
+            title: t.name || '',
+            seeders: parseInt(t.seeders) || 0,
+          };
+        })
+        .filter(t => t.seeders > 0)
+        .sort((a, b) => b.seeders - a.seeders || b.quality - a.quality);
+    } catch {
+      return [];
+    }
   }
 
   // Try Real-Debrid: check cache, add magnet, unrestrict
@@ -235,7 +271,25 @@ function streamRoutes() {
       const isSubscribed = req.user && hasActiveSubscription(req.app.locals.db, req.user.id);
 
       // 1. Scrape Torrentio for available torrents
-      const streams = await scrapeTorrentio(tmdb_id, type, season, episode);
+      let streams = await scrapeTorrentio(tmdb_id, type, season, episode);
+
+      // 1b. Fallback: if Torrentio returns nothing, search Pirate Bay
+      if (streams.length === 0) {
+        try {
+          // Get title/year from TMDB for the search query
+          const tmdbRes = await axios.get(`https://api.themoviedb.org/3/${type}/${tmdb_id}`, {
+            params: { language: 'en-US' },
+            headers: { Authorization: `Bearer ${process.env.TMDB_API_KEY}` },
+            timeout: 5000,
+          });
+          const title = tmdbRes.data?.title || tmdbRes.data?.name || '';
+          const year = (tmdbRes.data?.release_date || tmdbRes.data?.first_air_date || '').split('-')[0];
+          streams = await scrapePirateBay(title, year, type, season, episode);
+        } catch {
+          // TMDB lookup failed, proceed without fallback
+        }
+      }
+
       if (streams.length === 0) {
         return res.json({ available: false, reason: 'No torrent sources found for this title' });
       }
