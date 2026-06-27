@@ -27,15 +27,15 @@ export default function Home() {
       moviesApi.list({ category: "top_rated", type: "tv" }),
       moviesApi.list({ category: "airing_today" }),
     ])
-      .then(([f, t, tr, n, ps, ts, at]) => {
-        setFeatured(f);
-        setTrending(t);
-        setPopular(tr);
-        setTopRated(tr);
-        setNowPlaying(n);
-        setPopularShows(ps);
-        setTopShows(ts);
-        setAiringToday(at);
+      .then(([trending, popular, topRated, nowPlaying, popularTv, topRatedTv, airingToday]) => {
+        setFeatured(trending);
+        setTrending(trending);
+        setPopular(popular);
+        setTopRated(topRated);
+        setNowPlaying(nowPlaying);
+        setPopularShows(popularTv);
+        setTopShows(topRatedTv);
+        setAiringToday(airingToday);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -56,13 +56,13 @@ export default function Home() {
     <div>
       <HeroCarousel movies={featured} />
       <div className="pb-12">
-        <MovieRow title="📺 Trending Shows" movies={trending} viewAllLink="/browse" />
-        <MovieRow title="🎬 Popular Movies" movies={popular} viewAllLink="/browse" />
-        <MovieRow title="📺 Popular TV Shows" movies={popularShows} viewAllLink="/browse" />
-        <MovieRow title="⭐ Top Rated" movies={topRated} viewAllLink="/browse" />
-        <MovieRow title="📺 Top Rated TV" movies={topShows} viewAllLink="/browse" />
-        <MovieRow title="📡 Now Playing" movies={nowPlaying} viewAllLink="/browse" />
-        <MovieRow title="📡 Airing Today" movies={airingToday} viewAllLink="/browse" />
+        <MovieRow title="Trending Shows" movies={trending} viewAllLink="/browse" />
+        <MovieRow title="Popular Movies" movies={popular} viewAllLink="/browse" />
+        <MovieRow title="Popular TV Shows" movies={popularShows} viewAllLink="/browse" />
+        <MovieRow title="Top Rated" movies={topRated} viewAllLink="/browse" />
+        <MovieRow title="Top Rated TV" movies={topShows} viewAllLink="/browse" />
+        <MovieRow title="Now Playing" movies={nowPlaying} viewAllLink="/browse" />
+        <MovieRow title="Airing Today" movies={airingToday} viewAllLink="/browse" />
       </div>
     </div>
   );
