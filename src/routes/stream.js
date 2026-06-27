@@ -164,8 +164,8 @@ function streamRoutes() {
           };
         }
       } catch (err) {
-        // If 404 on instantAvailability, hash isn't cached — skip to next
-        if (err.response?.status !== 404) {
+        // 403 = account not premium, 404 = hash not cached — skip silently
+        if (err.response?.status !== 404 && err.response?.status !== 403) {
           console.error(`[Stream] RD error for ${s.infoHash}:`, err.response?.status, err.message);
         }
         continue;
@@ -234,16 +234,26 @@ function streamRoutes() {
           continue;
         }
 
-        // Already cached
+        // Already cached — pick the largest video file
         const cachedInfo = cacheData[s.infoHash];
+        const files = cachedInfo.files || [];
+        let bestFileIdx = 0;
+        let bestSize = 0;
+        for (const f of files) {
+          const fSize = parseInt(f.size) || 0;
+          if (fSize > bestSize && (f.mimetype || '').startsWith('video/')) {
+            bestSize = fSize;
+            bestFileIdx = typeof f.id === 'number' ? f.id : parseInt(f.id) || 0;
+          }
+        }
         const dlRes = await axios.get(`${TORBOX_API}/torrents/requestdl`, {
-          params: { token: tbKey, torrent_id: cachedInfo.id, file_id: s.fileIdx || 0, redirect: false },
+          params: { token: tbKey, torrent_id: cachedInfo.id, file_id: bestFileIdx, redirect: false },
           timeout: 15000,
         });
 
         const url = dlRes.data?.data;
         if (url) {
-          return { url, quality: s.quality, name: s.title, source: 'torbox' };
+          return { url, quality: s.quality, name: s.name || s.title, source: 'torbox' };
         }
       } catch {
         continue;
