@@ -232,17 +232,7 @@ function streamRoutes() {
         });
       }
 
-      // Gate for subscription
       const isSubscribed = req.user && hasActiveSubscription(req.app.locals.db, req.user.id);
-      if (!isSubscribed) {
-        return res.json({
-          available: true,
-          preview: true,
-          duration_seconds: 300,
-          quality: 720,
-          reason: 'Free preview — 5 minutes. Subscribe at /pricing to watch the full movie.',
-        });
-      }
 
       // 1. Scrape Torrentio for available torrents
       const streams = await scrapeTorrentio(tmdb_id, type, season, episode);
@@ -253,13 +243,38 @@ function streamRoutes() {
       // 2. Try Real-Debrid first (fastest, most reliable)
       if (rdKey) {
         const rdResult = await resolveViaRealDebrid(streams, rdKey);
-        if (rdResult) return res.json(rdResult);
+        if (rdResult) {
+          // Gate for subscription — non-subscribers get a preview-limited URL
+          if (!isSubscribed) {
+            return res.json({
+              url: rdResult.url,
+              quality: rdResult.quality || 720,
+              preview: true,
+              duration_seconds: 300,
+              name: rdResult.name,
+              source: rdResult.source,
+            });
+          }
+          return res.json(rdResult);
+        }
       }
 
       // 3. Fallback to TorBox
       if (tbKey) {
         const tbResult = await resolveViaTorBox(streams, tbKey);
-        if (tbResult) return res.json(tbResult);
+        if (tbResult) {
+          if (!isSubscribed) {
+            return res.json({
+              url: tbResult.url,
+              quality: tbResult.quality || 720,
+              preview: true,
+              duration_seconds: 300,
+              name: tbResult.name,
+              source: tbResult.source,
+            });
+          }
+          return res.json(tbResult);
+        }
       }
 
       // 4. No source found
