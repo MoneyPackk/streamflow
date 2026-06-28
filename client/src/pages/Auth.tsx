@@ -18,8 +18,8 @@ export default function Auth() {
       if (mode === "login") await login(email, password);
       else await register(email, password, name);
       navigate("/");
-    } catch {
-      setError("Something went wrong. Try again.");
+    } catch (e: any) {
+      setError(e.message || "Something went wrong. Try again.");
     }
   };
 

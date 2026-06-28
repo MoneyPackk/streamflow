@@ -35,6 +35,7 @@ export default function Player() {
   const [currentEmbed, setCurrentEmbed] = useState(0);
   const [useEmbed, setUseEmbed] = useState(false);
   const [embedError, setEmbedError] = useState(false);
+  const [embedsLoading, setEmbedsLoading] = useState(false);
 
   const type = (searchParams.get("type") as "movie" | "tv") || "movie";
   const season = searchParams.get("season") ? parseInt(searchParams.get("season")!) : undefined;
@@ -67,6 +68,7 @@ export default function Player() {
 
         // Try embed sources as fallback when no stream URL is available
         if (!streamData.url) {
+          setEmbedsLoading(true);
           let embedUrl = `/api/embed/${id}?type=${type}`;
           if (season !== undefined && episode !== undefined) {
             embedUrl += `&season=${season}&episode=${episode}`;
@@ -79,7 +81,8 @@ export default function Player() {
                 setUseEmbed(true);
               }
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => setEmbedsLoading(false));
         }
       })
       .catch((err) => setError(err.message))
@@ -161,7 +164,7 @@ export default function Player() {
   }
 
   // --- Error / unavailable state ---
-  if (error || (!stream?.available && !stream?.url && !useEmbed)) {
+  if ((error || (!stream?.available && !stream?.url && !useEmbed)) && !embedsLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
         <div className="text-center max-w-md px-4">

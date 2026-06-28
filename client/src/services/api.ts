@@ -36,6 +36,17 @@ export const moviesApi = {
   list: (params?: Record<string, string>) => {
     const cat = params?.category || '';
     const mediaType = params?.type || 'movie';
+
+    // Genre filter takes priority — use discover endpoint
+    if (params?.genre) {
+      return json<TmdbResponse>(`${API}/tmdb/discover?type=${mediaType}&with_genres=${params.genre}`)
+        .then(r => (r.items || []).map(mapTmdbItem));
+    }
+    // Sort=rating takes priority over category
+    if (params?.sort === 'rating') {
+      return json<TmdbResponse>(`${API}/tmdb/top_rated?type=${mediaType}`)
+        .then(r => (r.items || []).map(mapTmdbItem));
+    }
     if (cat === 'trending') {
       return json<TmdbResponse>(`${API}/tmdb/trending`)
         .then(r => (r.items || []).map(mapTmdbItem));
@@ -64,15 +75,7 @@ export const moviesApi = {
       return json<TmdbResponse>(`${API}/tmdb/trending`)
         .then(r => (r.items || []).map(mapTmdbItem));
     }
-    if (params?.sort === 'rating') {
-      return json<TmdbResponse>(`${API}/tmdb/top_rated?type=movie`)
-        .then(r => (r.items || []).map(mapTmdbItem));
-    }
-    if (params?.genre) {
-      return json<TmdbResponse>(`${API}/tmdb/discover?type=movie&with_genres=${params.genre}`)
-        .then(r => (r.items || []).map(mapTmdbItem));
-    }
-    return json<TmdbResponse>(`${API}/tmdb/popular?type=movie`)
+    return json<TmdbResponse>(`${API}/tmdb/popular?type=${mediaType}`)
       .then(r => (r.items || []).map(mapTmdbItem));
   },
   get: async (id: number | string, type?: "movie" | "tv") => {

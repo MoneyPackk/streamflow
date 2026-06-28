@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface User { id: string; email: string; displayName?: string; }
+interface User { id: string; email: string; username: string; is_admin?: number; }
 
 interface SubscriptionInfo {
   plan: string;
@@ -16,7 +16,8 @@ interface AuthState {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  restoreSession: () => Promise<void>;
   setSubscription: (sub: SubscriptionInfo | null) => void;
 }
 
@@ -26,17 +27,63 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       subscription: null,
       isLoading: false,
-      login: async (email) => {
+      login: async (email, password) => {
         set({ isLoading: true });
-        await new Promise((r) => setTimeout(r, 800));
-        set({ user: { id: `u_${Date.now()}`, email, displayName: email.split("@")[0] }, isLoading: false });
+        try {
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Invalid email or password");
+          }
+          const { user } = await res.json();
+          set({ user: { id: String(user.id), email: user.email, username: user.username, is_admin: user.is_admin }, isLoading: false });
+        } catch (e) {
+          set({ isLoading: false });
+          throw e;
+        }
       },
-      register: async (email, _pw, displayName) => {
+      register: async (email, password, displayName) => {
         set({ isLoading: true });
-        await new Promise((r) => setTimeout(r, 800));
-        set({ user: { id: `u_${Date.now()}`, email, displayName }, isLoading: false });
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: displayName, email, password }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Registration failed");
+          }
+          const { user } = await res.json();
+          set({ user: { id: String(user.id), email: user.email, username: user.username, is_admin: user.is_admin }, isLoading: false });
+        } catch (e) {
+          set({ isLoading: false });
+          throw e;
+        }
       },
-      logout: () => set({ user: null, subscription: null }),
+      logout: async () => {
+        await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+        set({ user: null, subscription: null });
+      },
+      restoreSession: async () => {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.id) {
+            set({
+              user: { id: String(data.id), email: data.email, username: data.username, is_admin: data.is_admin },
+              subscription: data.subscription || null,
+            });
+          }
+        } catch {
+          // Not logged in — ignore
+        }
+      },
       setSubscription: (sub) => set({ subscription: sub }),
     }),
     {
