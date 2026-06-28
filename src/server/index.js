@@ -20,12 +20,14 @@ const partiesRoutes = require('../routes/parties');
 const settingsRoutes = require('../routes/settings');
 const searchRoutes = require('../routes/search');
 const chatRoutes = require('../routes/chat');
+const moviesRoutes = require('../routes/movies');
 const subscriptionRoutes = require('../routes/subscription');
 const { webhookRouter } = require('../routes/subscription');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const db = initDB();
+app.locals.db = db;
 const animationDirectorRoutes = require('../routes/animation-director');
 
 // Trust nginx proxy so rate limiter sees real client IPs
@@ -96,6 +98,26 @@ app.use('/api/search', searchRoutes());
 app.use('/api/chat', chatRoutes());
 app.use('/api/animation-director', animationDirectorRoutes);
 app.use('/api/subscriptions', subscriptionRoutes(db));
+app.use('/api/movies', moviesRoutes());
+app.use('/api/genres', ((() => {
+  const router = express.Router();
+  const cache = new Map();
+  router.get('/', async (req, res) => {
+    const type = req.query.type || 'movie';
+    const cached = cache.get(type);
+    if (cached && Date.now() - cached.ts < 3600000) return res.json(cached.data);
+    try {
+      const axios = require('axios');
+      const { data } = await axios.get(`https://api.themoviedb.org/3/genre/${type}/list`, {
+        params: { language: 'en-US' },
+        headers: { Authorization: `Bearer ${process.env.TMDB_API_KEY}` },
+      });
+      cache.set(type, { data: data.genres || [], ts: Date.now() });
+      res.json(data.genres || []);
+    } catch { res.json([]); }
+  });
+  return router;
+})()));
 
 app.get('/api/health', (_req, res) => {
   res.json({

@@ -80,7 +80,7 @@ export default function Account() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Display Name</span>
-            <span>{user.displayName || "Not set"}</span>
+            <span>{user.username || "Not set"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Member Since</span>
@@ -148,7 +148,7 @@ export default function Account() {
       {/* Sign Out */}
       <section className="text-center">
         <button
-          onClick={() => { logout(); navigate("/"); }}
+          onClick={async () => { await logout(); navigate("/"); }}
           className="text-sm text-muted-foreground hover:text-red-400 transition-colors"
         >
           Sign Out

@@ -76,8 +76,7 @@ const ENGLISH_LANGS = new Set(['en', 'en-US', 'en-GB', '']);
 function isEnglishTitle(item) {
   if (!item.original_language) return true;
   if (!ENGLISH_LANGS.has(item.original_language)) return false;
-  // Title must be Latin/ASCII only (filters out Chinese, Japanese, Korean, Hindi, Arabic, etc.)
-  return /^[A-Za-z0-9\s\-\.,!?'"()&:;\u00C0-\u017F]+$/.test(item.title || item.name || '');
+  return true;
 }
 function isAmerican(item) {
   // Only filter content that's clearly non-English — don't block new/niche American shows

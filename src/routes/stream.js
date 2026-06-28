@@ -49,7 +49,13 @@ function streamRoutes() {
   // Fallback scraper: search Pirate Bay via Apibay when Torrentio returns nothing
   async function scrapePirateBay(title, year, type, season, episode) {
     try {
-      const searchQuery = encodeURIComponent(`${title} ${year || ''}`.trim());
+      let query = title;
+      if (type === 'tv' && season && episode) {
+        query += ` S${String(season).padStart(2, '0')}E${String(episode).padStart(2, '0')}`;
+      } else if (year) {
+        query += ` ${year}`;
+      }
+      const searchQuery = encodeURIComponent(query.trim());
       const { data } = await axios.get(`https://apibay.org/q.php?q=${searchQuery}`, { timeout: 10000 });
       if (!data || !Array.isArray(data)) return [];
 
@@ -182,7 +188,7 @@ function streamRoutes() {
   }
 
   // Try TorBox as fallback
-  async function resolveViaTorBox(streams, tbKey) {
+  async function resolveViaTorBox(streams, tbKey, targetEpisode) {
     if (!tbKey) return null;
 
     // Limit to first 5 streams to avoid long timeouts
@@ -219,13 +225,27 @@ function streamRoutes() {
           if (!item) continue;
 
           if (item.download_present) {
-            // Find the largest video file
+            // Find the best video file
             const files = item.files || [];
             let bestFileIdx = 0;
             let bestSize = 0;
+
             for (const f of files) {
               const fSize = parseInt(f.size) || 0;
-              if (fSize > bestSize && (f.mimetype || '').startsWith('video/')) {
+              const isVideo = (f.mimetype || '').startsWith('video/');
+              if (!isVideo) continue;
+
+              // For TV shows, match episode number in the filename
+              if (targetEpisode) {
+                const fname = (f.path || f.short_name || '').toUpperCase();
+                const epMatch = `E${String(targetEpisode).padStart(2, '0')}`;
+                if (fname.includes(epMatch)) {
+                  // Exact episode match — prefer this over anything else
+                  bestFileIdx = typeof f.id === 'number' ? f.id : parseInt(f.id) || 0;
+                  bestSize = Infinity; // Force this to be selected
+                }
+              } else if (fSize > bestSize) {
+                // Movie — just pick largest
                 bestSize = fSize;
                 bestFileIdx = typeof f.id === 'number' ? f.id : parseInt(f.id) || 0;
               }

@@ -59,7 +59,7 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-3">
               <Link to="/account" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
-                <span>{user.displayName || user.email.split("@")[0]}</span>
+                <span>{user.username || user.email.split("@")[0]}</span>
                 {isSubscribed && (
                   <span className={`text-xs font-medium ${planBadge[plan] || "text-zinc-500"}`}>
                     {plan.charAt(0).toUpperCase() + plan.slice(1)}
